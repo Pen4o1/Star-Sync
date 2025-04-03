@@ -1,6 +1,6 @@
 import Purchases from 'react-native-purchases';
 
-const API_KEY = 'YOUR_REVENUECAT_API_KEY';
+const API_KEY = 'test key for now';
 
 export interface SubscriptionPackage {
   identifier: string;
