@@ -1,6 +1,12 @@
 import axios from 'axios';
+import Constants from 'expo-constants';
 
-const BASE_URL = 'http://cms.buzlylabs.com/horoscope_api';
+// Use a CORS proxy for development environment
+const isDevelopment = __DEV__;
+const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
+const BASE_URL = isDevelopment 
+  ? `${PROXY_URL}http://cms.buzlylabs.com/horoscope_api`
+  : 'http://cms.buzlylabs.com/horoscope_api';
 
 export interface HoroscopeResponse {
   date: string;

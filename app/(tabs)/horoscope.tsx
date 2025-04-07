@@ -76,7 +76,7 @@ export default function HoroscopeScreen() {
               <Text style={styles.errorText}>Failed to load horoscope</Text>
             </View>
           )}
-
+          
           <View style={styles.navigationContainer}>
             <TouchableOpacity
               style={styles.navButton}
