@@ -9,6 +9,7 @@ import TabBookmark from "../../assets/images/SVG/Files/TabBookmark";
 import TabSettings from "../../assets/images/SVG/Files/TabSettings";
 import TabProfile from "../../assets/images/SVG/Files/TabProfile";
 import SVGImages from "../../assets/images/SVG"; // For Home icon
+import { FontAwesome6 } from '@expo/vector-icons';
 
 const _layout = () => {
   const colorScheme = useColorScheme();
@@ -57,36 +58,51 @@ const TabContent = ({ colorScheme }) => {
       }}
     >
       <Tabs.Screen
-        name="Wishlist"
+        name="daily"
         options={{
-          tabBarIcon: ({ color }) => <TabHeart fill={color} />,
+          tabBarIcon: ({ color }) => <FontAwesome6 name="sun" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="BookMark"
+        name="weekly"
         options={{
-          tabBarIcon: ({ color }) => <TabBookmark fill={color} />,
+          tabBarIcon: ({ color }) => <FontAwesome6 name="calendar-week" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="Home"
+        name="monthly"
         options={{
-          tabBarIcon: ({ color }) => <SVGImages.Home fill={color} />,
-          href: {
-            pathname: "/Home",
-          },
+          tabBarIcon: ({ color }) => <FontAwesome6 name="calendar" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="Settings"
+        name="yearly"
         options={{
-          tabBarIcon: ({ color }) => <TabSettings fill={color} />,
+          tabBarIcon: ({ color }) => <FontAwesome6 name="calendar-days" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="Profile"
+        name="chinese"
         options={{
-          tabBarIcon: ({ color }) => <TabProfile fill={color} />,
+          tabBarIcon: ({ color }) => <FontAwesome6 name="dragon" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="match"
+        options={{
+          tabBarIcon: ({ color }) => <FontAwesome6 name="heart" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="dreambook"
+        options={{
+          tabBarIcon: ({ color }) => <FontAwesome6 name="moon" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="horoscope"
+        options={{
+          tabBarIcon: ({ color }) => <FontAwesome6 name="star" size={24} color={color} />,
         }}
       />
     </Tabs>
