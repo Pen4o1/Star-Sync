@@ -5,17 +5,31 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 import { ZODIAC_SIGNS } from '../../constants/zodiacData';
 import { getWeeklyHoroscope } from '../../services/horoscopeApi';
 import { HoroscopeResponse } from '../../services/horoscopeApi';
 
+interface HoroscopeSection {
+  text: string;
+  name: string;
+  num?: number;
+}
+
+interface WeeklyHoroscopeData {
+  sign_name: string;
+  id: string;
+  date: string;
+  horoscopes: HoroscopeSection[];
+}
+
 export default function WeeklyHoroscopeScreen() {
   const [selectedSign, setSelectedSign] = useState(1);
-  const [horoscope, setHoroscope] = useState<HoroscopeResponse | null>(null);
+  const [horoscope, setHoroscope] = useState<WeeklyHoroscopeData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('Overview');
 
   useEffect(() => {
     fetchHoroscope();
@@ -25,7 +39,7 @@ export default function WeeklyHoroscopeScreen() {
     try {
       setLoading(true);
       const data = await getWeeklyHoroscope(selectedSign);
-      setHoroscope(data);
+      setHoroscope(data as unknown as WeeklyHoroscopeData);
     } catch (error) {
       console.error('Error fetching weekly horoscope:', error);
     } finally {
@@ -37,6 +51,10 @@ export default function WeeklyHoroscopeScreen() {
     setSelectedSign(signId);
   };
 
+  const toggleSection = (sectionName: string) => {
+    setActiveSection(sectionName);
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -44,6 +62,8 @@ export default function WeeklyHoroscopeScreen() {
         style={styles.gradient}
       >
         <ScrollView style={styles.scrollView}>
+          <Text style={styles.title}>Weekly Horoscope</Text>
+          
           <View style={styles.signsContainer}>
             {ZODIAC_SIGNS.map((sign) => (
               <TouchableOpacity
@@ -62,16 +82,77 @@ export default function WeeklyHoroscopeScreen() {
 
           {loading ? (
             <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Loading...</Text>
+              <ActivityIndicator size="large" color="#FFAA1E" />
+              <Text style={styles.loadingText}>Loading your weekly horoscope...</Text>
             </View>
           ) : horoscope ? (
             <View style={styles.horoscopeContainer}>
               <Text style={styles.date}>{horoscope.date}</Text>
-              <Text style={styles.horoscopeText}>{horoscope.horoscope}</Text>
+              <Text style={styles.signName}>{horoscope.sign_name}</Text>
+              
+              <View style={styles.sectionsContainer}>
+                {horoscope.horoscopes.map((section) => (
+                  <TouchableOpacity
+                    key={section.name}
+                    style={[
+                      styles.sectionButton,
+                      activeSection === section.name && styles.activeSectionButton,
+                    ]}
+                    onPress={() => toggleSection(section.name)}
+                  >
+                    <Text style={[
+                      styles.sectionButtonText,
+                      activeSection === section.name && styles.activeSectionButtonText,
+                    ]}>
+                      {section.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
+              <View style={styles.sectionContent}>
+                {horoscope.horoscopes
+                  .filter(section => section.name === activeSection)
+                  .map(section => (
+                    <Text key={section.name} style={styles.horoscopeText}>
+                      {section.text}
+                    </Text>
+                  ))}
+              </View>
+              
+              <View style={styles.navigationContainer}>
+                <TouchableOpacity
+                  style={styles.navButton}
+                  onPress={() => {
+                    const currentIndex = horoscope.horoscopes.findIndex(s => s.name === activeSection);
+                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : horoscope.horoscopes.length - 1;
+                    setActiveSection(horoscope.horoscopes[prevIndex].name);
+                  }}
+                >
+                  <Text style={styles.navButtonText}>Previous</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.navButton}
+                  onPress={() => {
+                    const currentIndex = horoscope.horoscopes.findIndex(s => s.name === activeSection);
+                    const nextIndex = currentIndex < horoscope.horoscopes.length - 1 ? currentIndex + 1 : 0;
+                    setActiveSection(horoscope.horoscopes[nextIndex].name);
+                  }}
+                >
+                  <Text style={styles.navButtonText}>Next</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>Failed to load horoscope</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={fetchHoroscope}
+              >
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
             </View>
           )}
         </ScrollView>
@@ -89,6 +170,14 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFAA1E',
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 10,
   },
   signsContainer: {
     flexDirection: 'row',
@@ -114,16 +203,21 @@ const styles = StyleSheet.create({
   },
   signName: {
     color: '#fff',
-    fontSize: 12,
-    marginTop: 5,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
   },
   loadingContainer: {
     padding: 20,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 200,
   },
   loadingText: {
     color: '#fff',
     fontSize: 16,
+    marginTop: 10,
   },
   horoscopeContainer: {
     padding: 20,
@@ -134,7 +228,8 @@ const styles = StyleSheet.create({
   date: {
     color: '#FFAA1E',
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 5,
+    textAlign: 'center',
   },
   horoscopeText: {
     color: '#fff',
@@ -144,9 +239,71 @@ const styles = StyleSheet.create({
   errorContainer: {
     padding: 20,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 200,
   },
   errorText: {
     color: '#ff4444',
     fontSize: 16,
+    marginBottom: 10,
+  },
+  retryButton: {
+    backgroundColor: '#FFAA1E',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  sectionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 15,
+    flexWrap: 'wrap',
+  },
+  sectionButton: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#333',
+    marginBottom: 10,
+    minWidth: '48%',
+    alignItems: 'center',
+  },
+  activeSectionButton: {
+    backgroundColor: '#FFAA1E',
+  },
+  sectionButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  activeSectionButtonText: {
+    color: '#000',
+  },
+  sectionContent: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 5,
+  },
+  navigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  navButton: {
+    backgroundColor: '#FFAA1E',
+    padding: 10,
+    borderRadius: 5,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  navButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 }); 
