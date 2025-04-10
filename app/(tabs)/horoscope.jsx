@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -6,45 +6,41 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { ZODIAC_SIGNS } from '../../constants/zodiacData';
-import { getDailyHoroscope } from '../../services/horoscopeApi';
-import { HoroscopeResponse } from '../../services/horoscopeApi';
+} from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { router } from 'expo-router'
+import { ZODIAC_SIGNS } from '../../constants/zodiacData'
+import { getDailyHoroscope } from '../../services/horoscopeApi'
 
 export default function HoroscopeScreen() {
-  const [selectedSign, setSelectedSign] = useState(1);
-  const [horoscope, setHoroscope] = useState<HoroscopeResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [selectedSign, setSelectedSign] = useState(1)
+  const [horoscope, setHoroscope] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchHoroscope();
-  }, [selectedSign]);
+    fetchHoroscope()
+  }, [selectedSign])
 
   const fetchHoroscope = async () => {
     try {
-      setLoading(true);
-      const today = new Date().toISOString().split('T')[0];
-      const data = await getDailyHoroscope(selectedSign, today);
-      setHoroscope(data);
+      setLoading(true)
+      const today = new Date().toISOString().split('T')[0]
+      const data = await getDailyHoroscope(selectedSign, today)
+      setHoroscope(data)
     } catch (error) {
-      console.error('Error fetching horoscope:', error);
+      console.error('Error fetching horoscope:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleSignSelect = (signId: number) => {
-    setSelectedSign(signId);
-  };
+  const handleSignSelect = (signId) => {
+    setSelectedSign(signId)
+  }
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#1a1a1a', '#2a2a2a']}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.signsContainer}>
             {ZODIAC_SIGNS.map((sign) => (
@@ -76,7 +72,7 @@ export default function HoroscopeScreen() {
               <Text style={styles.errorText}>Failed to load horoscope</Text>
             </View>
           )}
-          
+
           <View style={styles.navigationContainer}>
             <TouchableOpacity
               style={styles.navButton}
@@ -100,7 +96,7 @@ export default function HoroscopeScreen() {
         </ScrollView>
       </LinearGradient>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -189,4 +185,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-}); 
+})

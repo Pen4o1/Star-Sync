@@ -1,49 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { CHINESE_ZODIAC } from '../../constants/zodiacData';
-import { getChineseDailyHoroscope } from '../../services/horoscopeApi';
-import { ChineseHoroscopeResponse } from '../../services/horoscopeApi';
+} from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { router } from 'expo-router'
+import { CHINESE_ZODIAC } from '../../constants/zodiacData'
+import { getChineseDailyHoroscope } from '../../services/horoscopeApi'
 
 export default function ChineseHoroscopeScreen() {
-  const [selectedAnimal, setSelectedAnimal] = useState(1);
-  const [horoscope, setHoroscope] = useState<ChineseHoroscopeResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [selectedAnimal, setSelectedAnimal] = useState(1)
+  const [horoscope, setHoroscope] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchHoroscope();
-  }, [selectedAnimal]);
+    fetchHoroscope()
+  }, [selectedAnimal])
 
   const fetchHoroscope = async () => {
     try {
-      setLoading(true);
-      const today = new Date().toISOString().split('T')[0];
-      const data = await getChineseDailyHoroscope(selectedAnimal, today);
-      setHoroscope(data);
+      setLoading(true)
+      const today = new Date().toISOString().split('T')[0]
+      const data = await getChineseDailyHoroscope(selectedAnimal, today)
+      setHoroscope(data)
     } catch (error) {
-      console.error('Error fetching Chinese horoscope:', error);
+      console.error('Error fetching Chinese horoscope:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleAnimalSelect = (animalId: number) => {
-    setSelectedAnimal(animalId);
-  };
+  const handleAnimalSelect = (animalId) => {
+    setSelectedAnimal(animalId)
+  }
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#1a1a1a', '#2a2a2a']}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.animalsContainer}>
             {CHINESE_ZODIAC.map((animal) => (
@@ -78,7 +74,7 @@ export default function ChineseHoroscopeScreen() {
         </ScrollView>
       </LinearGradient>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -151,4 +147,4 @@ const styles = StyleSheet.create({
     color: '#ff4444',
     fontSize: 16,
   },
-}); 
+})

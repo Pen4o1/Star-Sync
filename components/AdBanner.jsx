@@ -1,12 +1,8 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { AdMobBanner } from 'expo-ads-admob';
+import React from 'react'
+import { View, StyleSheet } from 'react-native'
+import { AdMobBanner } from 'expo-ads-admob'
 
-interface AdBannerProps {
-  unitID: string;
-}
-
-export default function AdBanner({ unitID }: AdBannerProps) {
+export default function AdBanner({ unitID }) {
   return (
     <View style={styles.container}>
       <AdMobBanner
@@ -16,7 +12,7 @@ export default function AdBanner({ unitID }: AdBannerProps) {
         onDidFailToReceiveAdWithError={(error) => console.error(error)}
       />
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -25,4 +21,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 10,
   },
-}); 
+})

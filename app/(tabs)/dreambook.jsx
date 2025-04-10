@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -7,57 +7,49 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { searchDreamBook, getDreamBookWord } from '../../services/horoscopeApi';
-
-interface DreamWord {
-  id: number;
-  word: string;
-}
+} from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { searchDreamBook, getDreamBookWord } from '../../services/horoscopeApi'
 
 export default function DreamBookScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<DreamWord[]>([]);
-  const [selectedWord, setSelectedWord] = useState<DreamWord | null>(null);
-  const [interpretation, setInterpretation] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [selectedWord, setSelectedWord] = useState(null)
+  const [interpretation, setInterpretation] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    
-    try {
-      setLoading(true);
-      const results = await searchDreamBook(searchQuery);
-      setSearchResults(results);
-      setSelectedWord(null);
-      setInterpretation(null);
-    } catch (error) {
-      console.error('Error searching dream book:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!searchQuery.trim()) return
 
-  const handleWordSelect = async (word: DreamWord) => {
     try {
-      setLoading(true);
-      setSelectedWord(word);
-      const result = await getDreamBookWord(word.id);
-      setInterpretation(result.interpretation);
+      setLoading(true)
+      const results = await searchDreamBook(searchQuery)
+      setSearchResults(results)
+      setSelectedWord(null)
+      setInterpretation(null)
     } catch (error) {
-      console.error('Error fetching word interpretation:', error);
+      console.error('Error searching dream book:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  const handleWordSelect = async (word) => {
+    try {
+      setLoading(true)
+      setSelectedWord(word)
+      const result = await getDreamBookWord(word.id)
+      setInterpretation(result.interpretation)
+    } catch (error) {
+      console.error('Error fetching word interpretation:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#1a1a1a', '#2a2a2a']}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
@@ -109,7 +101,7 @@ export default function DreamBookScreen() {
         )}
       </LinearGradient>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -183,4 +175,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
   },
-}); 
+})
