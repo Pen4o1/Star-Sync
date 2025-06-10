@@ -1,79 +1,59 @@
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
+  View,
   Text,
   TouchableOpacity,
-  View,
+  StyleSheet,
+  ScrollView,
 } from "react-native";
-import React, { useContext } from "react";
-import CategoryComponent from "../../components/HomeComponents/CategoryComponent";
+import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import BlogComponent from "../../components/HomeComponents/BlogComponent";
-import ServiceComponent from "../../components/HomeComponents/ServiceComponent";
-import HeaderComponent from "../../components/HomeComponents/HeaderComponent";
-import ThemeContext from "../../theme/ThemeContext";
-import AstrologersComponent from "../../components/HomeComponents/AstrologersComponent";
 import { ThemedView } from "../../components/ThemedView";
 import { ThemedText } from "../../components/ThemedText";
-import { router } from "expo-router";
-import Ads from "../../assets/images/Ads.png";
-import AdsContainer from "../../components/HomeComponents/AdsContainer";
+import HeaderComponent from "../../components/HomeComponents/HeaderComponent";
+import HoroscopeOfTheDay from "../../components/HomeComponents/HoroscopeOfTheDay";
+import ChineseHoroscope from "../../components/HomeComponents/ChineseHoroscope";
+import DreamBook from "../../components/HomeComponents/DreamBook";
+import Matches from "../../components/HomeComponents/Matches";
+import DropdownMenu from "../../components/HomeComponents/DropdownMenu";
+
 const Home = () => {
-  const handleSeeAll = () => {
-    router.push("/Astrologers/Astrologers");
-  };
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView>
+        <DropdownMenu /> {/* Dropdown in top left */}
         <ScrollView showsVerticalScrollIndicator={false}>
           <HeaderComponent />
+
+          {/* Horoscope of the Day */}
           <View style={styles.sectionContainer}>
-            <View style={styles.subHeadingContainer}>
-              <ThemedText type="subtitle" style={styles.subtitle}>
-                Categorys
-              </ThemedText>
-              <TouchableOpacity>
-                <Text style={styles.seeAllText}>See All</Text>
-              </TouchableOpacity>
-            </View>
-            <CategoryComponent />
+            <ThemedText type="subtitle" style={styles.subtitle}>
+              Horoscope of the Day
+            </ThemedText>
+            <HoroscopeOfTheDay userZodiacId={5} />
           </View>
 
-          <AdsContainer />
+          {/* Chinese Horoscope */}
+          <View style={styles.sectionContainer}>
+            <ThemedText type="subtitle" style={styles.subtitle}>
+              Chinese Horoscope
+            </ThemedText>
+            <ChineseHoroscope initialAnimalId={4}/>
+          </View>
 
-          <View style={styles.sectionContainer}>
-            <View style={styles.subHeadingContainer}>
+          {/* Dream Book & Matches Side by Side */}
+          <View style={styles.rowContainer}>
+            <View style={styles.half}>
               <ThemedText type="subtitle" style={styles.subtitle}>
-                Astrologers
+                Dream Book
               </ThemedText>
-              <TouchableOpacity onPress={handleSeeAll}>
-                <Text style={styles.seeAllText}>See All</Text>
-              </TouchableOpacity>
+              <DreamBook />
             </View>
-            <AstrologersComponent />
-          </View>
-          <View style={styles.sectionContainer}>
-            <View style={styles.subHeadingContainer}>
+            <View style={styles.half}>
               <ThemedText type="subtitle" style={styles.subtitle}>
-                Our Services
+                Matches
               </ThemedText>
-              <TouchableOpacity>
-                <Text style={styles.seeAllText}>See All</Text>
-              </TouchableOpacity>
+              <Matches />
             </View>
-            <ServiceComponent />
-          </View>
-          <View style={styles.sectionContainer}>
-            <View style={styles.subHeadingContainer}>
-              <ThemedText type="subtitle" style={styles.subtitle}>
-                Our Blogs
-              </ThemedText>
-              <TouchableOpacity>
-                <Text style={styles.seeAllText}>See All</Text>
-              </TouchableOpacity>
-            </View>
-            <BlogComponent />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -83,30 +63,26 @@ const Home = () => {
 
 export default Home;
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
     paddingBottom: 120,
   },
-  subHeadingContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  sectionContainer: {
     marginBottom: 30,
   },
   subtitle: {
     fontSize: 18,
+    marginBottom: 10,
   },
-  seeAllText: {
-    color: "#FFAA1E",
-  },
-  sectionContainer: {
+  rowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 30,
   },
-  ads: {
-    width: "100%",
-    height: 200,
-    resizeMode: "contain",
-    marginBottom: "30",
+  half: {
+    width: "48%",
   },
 });
