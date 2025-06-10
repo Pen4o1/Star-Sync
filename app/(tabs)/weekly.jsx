@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -6,64 +6,47 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ZODIAC_SIGNS } from '../../constants/zodiacData';
-import { getMonthlyHoroscope } from '../../services/horoscopeApi';
-import { HoroscopeResponse } from '../../services/horoscopeApi';
+} from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { ZODIAC_SIGNS } from '../../constants/zodiacData'
+import { getWeeklyHoroscope } from '../../services/horoscopeApi'
 
-interface HoroscopeSection {
-  text: string;
-  name: string;
-  num?: number;
-}
-
-interface MonthlyHoroscopeData {
-  sign_name: string;
-  id: string;
-  date: string;
-  horoscopes: HoroscopeSection[];
-}
-
-export default function MonthlyHoroscopeScreen() {
-  const [selectedSign, setSelectedSign] = useState(1);
-  const [horoscope, setHoroscope] = useState<MonthlyHoroscopeData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState('Overview');
+export default function WeeklyHoroscopeScreen() {
+  const [selectedSign, setSelectedSign] = useState(1)
+  const [horoscope, setHoroscope] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [activeSection, setActiveSection] = useState('Overview')
 
   useEffect(() => {
-    fetchHoroscope();
-  }, [selectedSign]);
+    fetchHoroscope()
+  }, [selectedSign])
 
   const fetchHoroscope = async () => {
     try {
-      setLoading(true);
-      const data = await getMonthlyHoroscope(selectedSign);
-      setHoroscope(data as unknown as MonthlyHoroscopeData);
+      setLoading(true)
+      const data = await getWeeklyHoroscope(selectedSign)
+      setHoroscope(data)
     } catch (error) {
-      console.error('Error fetching monthly horoscope:', error);
+      console.error('Error fetching weekly horoscope:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleSignSelect = (signId: number) => {
-    setSelectedSign(signId);
-  };
+  const handleSignSelect = (signId) => {
+    setSelectedSign(signId)
+  }
 
-  const toggleSection = (sectionName: string) => {
-    setActiveSection(sectionName);
-  };
+  const toggleSection = (sectionName) => {
+    setActiveSection(sectionName)
+  }
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#1a1a1a', '#2a2a2a']}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
         <ScrollView style={styles.scrollView}>
-          <Text style={styles.title}>Monthly Horoscope</Text>
-          
+          <Text style={styles.title}>Weekly Horoscope</Text>
+
           <View style={styles.signsContainer}>
             {ZODIAC_SIGNS.map((sign) => (
               <TouchableOpacity
@@ -83,61 +66,77 @@ export default function MonthlyHoroscopeScreen() {
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#FFAA1E" />
-              <Text style={styles.loadingText}>Loading your monthly horoscope...</Text>
+              <Text style={styles.loadingText}>
+                Loading your weekly horoscope...
+              </Text>
             </View>
           ) : horoscope ? (
             <View style={styles.horoscopeContainer}>
               <Text style={styles.date}>{horoscope.date}</Text>
               <Text style={styles.signName}>{horoscope.sign_name}</Text>
-              
+
               <View style={styles.sectionsContainer}>
                 {horoscope.horoscopes.map((section) => (
                   <TouchableOpacity
                     key={section.name}
                     style={[
                       styles.sectionButton,
-                      activeSection === section.name && styles.activeSectionButton,
+                      activeSection === section.name &&
+                        styles.activeSectionButton,
                     ]}
                     onPress={() => toggleSection(section.name)}
                   >
-                    <Text style={[
-                      styles.sectionButtonText,
-                      activeSection === section.name && styles.activeSectionButtonText,
-                    ]}>
+                    <Text
+                      style={[
+                        styles.sectionButtonText,
+                        activeSection === section.name &&
+                          styles.activeSectionButtonText,
+                      ]}
+                    >
                       {section.name}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
-              
+
               <View style={styles.sectionContent}>
                 {horoscope.horoscopes
-                  .filter(section => section.name === activeSection)
-                  .map(section => (
+                  .filter((section) => section.name === activeSection)
+                  .map((section) => (
                     <Text key={section.name} style={styles.horoscopeText}>
                       {section.text}
                     </Text>
                   ))}
               </View>
-              
+
               <View style={styles.navigationContainer}>
                 <TouchableOpacity
                   style={styles.navButton}
                   onPress={() => {
-                    const currentIndex = horoscope.horoscopes.findIndex(s => s.name === activeSection);
-                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : horoscope.horoscopes.length - 1;
-                    setActiveSection(horoscope.horoscopes[prevIndex].name);
+                    const currentIndex = horoscope.horoscopes.findIndex(
+                      (s) => s.name === activeSection
+                    )
+                    const prevIndex =
+                      currentIndex > 0
+                        ? currentIndex - 1
+                        : horoscope.horoscopes.length - 1
+                    setActiveSection(horoscope.horoscopes[prevIndex].name)
                   }}
                 >
                   <Text style={styles.navButtonText}>Previous</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
                   style={styles.navButton}
                   onPress={() => {
-                    const currentIndex = horoscope.horoscopes.findIndex(s => s.name === activeSection);
-                    const nextIndex = currentIndex < horoscope.horoscopes.length - 1 ? currentIndex + 1 : 0;
-                    setActiveSection(horoscope.horoscopes[nextIndex].name);
+                    const currentIndex = horoscope.horoscopes.findIndex(
+                      (s) => s.name === activeSection
+                    )
+                    const nextIndex =
+                      currentIndex < horoscope.horoscopes.length - 1
+                        ? currentIndex + 1
+                        : 0
+                    setActiveSection(horoscope.horoscopes[nextIndex].name)
                   }}
                 >
                   <Text style={styles.navButtonText}>Next</Text>
@@ -147,7 +146,7 @@ export default function MonthlyHoroscopeScreen() {
           ) : (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>Failed to load horoscope</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.retryButton}
                 onPress={fetchHoroscope}
               >
@@ -158,7 +157,7 @@ export default function MonthlyHoroscopeScreen() {
         </ScrollView>
       </LinearGradient>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -306,4 +305,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-}); 
+})

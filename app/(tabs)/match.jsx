@@ -1,47 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ZODIAC_SIGNS } from '../../constants/zodiacData';
-import { getLoveMatch, getFriendMatch } from '../../services/horoscopeApi';
-import { MatchResponse } from '../../services/horoscopeApi';
+} from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { ZODIAC_SIGNS } from '../../constants/zodiacData'
+import { getLoveMatch, getFriendMatch } from '../../services/horoscopeApi'
 
 export default function MatchScreen() {
-  const [selectedSign1, setSelectedSign1] = useState(1);
-  const [selectedSign2, setSelectedSign2] = useState(2);
-  const [matchType, setMatchType] = useState<'love' | 'friend'>('love');
-  const [matchResult, setMatchResult] = useState<MatchResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [selectedSign1, setSelectedSign1] = useState(1)
+  const [selectedSign2, setSelectedSign2] = useState(2)
+  const [matchType, setMatchType] = useState('love')
+  const [matchResult, setMatchResult] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const fetchMatch = async () => {
     try {
-      setLoading(true);
-      const sign1 = ZODIAC_SIGNS[selectedSign1 - 1].name.toLowerCase();
-      const sign2 = ZODIAC_SIGNS[selectedSign2 - 1].name.toLowerCase();
-      
-      const data = matchType === 'love' 
-        ? await getLoveMatch(sign1, sign2)
-        : await getFriendMatch(sign1, sign2);
-      
-      setMatchResult(data);
+      setLoading(true)
+      const sign1 = ZODIAC_SIGNS[selectedSign1 - 1].name.toLowerCase()
+      const sign2 = ZODIAC_SIGNS[selectedSign2 - 1].name.toLowerCase()
+
+      const data =
+        matchType === 'love'
+          ? await getLoveMatch(sign1, sign2)
+          : await getFriendMatch(sign1, sign2)
+
+      setMatchResult(data)
     } catch (error) {
-      console.error('Error fetching match:', error);
+      console.error('Error fetching match:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#1a1a1a', '#2a2a2a']}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.matchTypeContainer}>
             <TouchableOpacity
@@ -128,7 +125,7 @@ export default function MatchScreen() {
         </ScrollView>
       </LinearGradient>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -231,4 +228,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
   },
-}); 
+})
