@@ -1,8 +1,8 @@
 import React from 'react'
 import { View, StyleSheet, ScrollView } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import DailyHoroscope from '../../components/DailyHoroscope'
-import ChineseHoroscope from '../../components/ChineseHoroscope'
+import DailyHoroscope from '../../components/HomeComponents/DailyHoroscope'
+import ChineseHoroscope from '../../components/HomeComponents/ChineseHoroscope'
 
 export default function HomeScreen() {
   return (

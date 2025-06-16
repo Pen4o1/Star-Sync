@@ -8,9 +8,9 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import { ZODIAC_SIGNS } from '../constants/zodiacData'
-import { getDailyHoroscope } from '../services/horoscopeApi'
-import { USER_ZODIAC_SIGN_ID, USER_BIRTHDATE } from '../constants/userData'
+import { ZODIAC_SIGNS } from '../../constants/zodiacData'
+import { getDailyHoroscope } from '../../services/horoscopeApi'
+import { USER_ZODIAC_SIGN_ID, USER_BIRTHDATE } from '../../constants/userData'
 
 export default function DailyHoroscope() {
   const [horoscope, setHoroscope] = useState(null)
