@@ -6,6 +6,8 @@ import { Slot, SplashScreen, Stack } from "expo-router";
 import ThemeContext from "../theme/ThemeContext";
 import theme from "../theme/Theme";
 import { EventRegister } from "react-native-event-listeners";
+import DropdownMenu from "../components/HomeComponents/DropdownMenu";
+
 const _layout = () => {
   const [fontsLoaded, error] = useFonts({
     "Nunito-Black": require("../assets/fonts/Nunito-Black.ttf"),
@@ -46,6 +48,7 @@ const _layout = () => {
   return (
     <ThemeContext.Provider value={darkMode ? theme.dark : theme.light}>
       <View style={styles.container}>
+        <DropdownMenu />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />

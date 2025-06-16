@@ -1,9 +1,8 @@
 import React from 'react'
 import { View, StyleSheet, ScrollView } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import DailyHoroscope from '../../components/HomeComponents/DailyHoroscope'
-import ChineseHoroscope from '../../components/HomeComponents/ChineseHoroscope'
-import FeatureButtons from '../../components/HomeComponents/FeatureButtons'
+import DailyHoroscope from '../../components/DailyHoroscope'
+import ChineseHoroscope from '../../components/ChineseHoroscope'
 
 export default function HomeScreen() {
   return (
@@ -12,7 +11,6 @@ export default function HomeScreen() {
         <ScrollView style={styles.scrollView}>
           <DailyHoroscope />
           <ChineseHoroscope />
-          <FeatureButtons />
         </ScrollView>
       </LinearGradient>
     </View>
