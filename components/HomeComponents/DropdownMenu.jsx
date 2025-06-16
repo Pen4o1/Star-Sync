@@ -1,50 +1,123 @@
-import React, { useState } from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 const DropdownMenu = () => {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [animation] = useState(new Animated.Value(0));
+  const router = useRouter();
+
+  const toggleMenu = () => {
+    const toValue = isOpen ? 0 : 1;
+    Animated.spring(animation, {
+      toValue,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+    setIsOpen(!isOpen);
+  };
+
+  const menuItems = [
+    { name: 'Daily', route: '/daily' },
+    { name: 'Weekly', route: '/weekly' },
+    { name: 'Monthly', route: '/monthly' },
+    { name: 'Yearly', route: '/yearly' },
+    { name: 'Chinese', route: '/chinese' },
+    { name: 'Matches', route: '/match' },
+    { name: 'Dream Book', route: '/dreambook' },
+    { name: 'Horoscope', route: '/horoscope' },
+  ];
+
+  const translateY = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-20, 0],
+  });
+
+  const opacity = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => setOpen(!open)}>
-        <Ionicons name="menu" size={28} color="black" />
+      <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+        <FontAwesome6 name="bars" size={24} color="#FFAA1E" />
       </TouchableOpacity>
-      {open && (
-        <View style={styles.dropdown}>
-          <TouchableOpacity>
-            <Text style={styles.item}>Settings</Text>
+
+      <Animated.View 
+        style={[
+          styles.menu,
+          {
+            opacity,
+            transform: [{ translateY }],
+          }
+        ]}
+      >
+        {menuItems.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.menuItem}
+            onPress={() => {
+              router.push(item.route);
+              setIsOpen(false);
+            }}
+          >
+            <FontAwesome6 
+              name={item.name === 'Dream Book' ? 'moon' : 
+                    item.name === 'Matches' ? 'heart' : 
+                    item.name === 'Chinese' ? 'dragon' : 
+                    item.name === 'Horoscope' ? 'star' : 
+                    item.name === 'Daily' ? 'sun' : 
+                    item.name === 'Weekly' ? 'calendar-week' : 
+                    item.name === 'Monthly' ? 'calendar' : 
+                    'calendar-days'} 
+              size={20} 
+              color="#FFAA1E" 
+              style={styles.menuIcon}
+            />
+            <FontAwesome6 name="chevron-right" size={16} color="#FFAA1E" style={styles.chevron} />
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={styles.item}>Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={styles.item}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        ))}
+      </Animated.View>
     </View>
   );
 };
 
-export default DropdownMenu;
-
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    zIndex: 10,
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1000,
   },
-  dropdown: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    elevation: 3,
+  menuButton: {
     padding: 10,
-    marginTop: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 10,
   },
-  item: {
-    paddingVertical: 8,
-    fontSize: 16,
+  menu: {
+    position: 'absolute',
+    top: 50,
+    left: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderRadius: 10,
+    overflow: 'hidden',
+    width: 200,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 170, 30, 0.2)',
+  },
+  menuIcon: {
+    marginRight: 10,
+  },
+  chevron: {
+    marginLeft: 'auto',
   },
 });
+
+export default DropdownMenu;
