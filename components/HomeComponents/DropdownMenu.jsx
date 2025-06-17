@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Animated, Text } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -19,14 +19,11 @@ const DropdownMenu = () => {
   };
 
   const menuItems = [
-    { name: 'Daily', route: '/daily' },
-    { name: 'Weekly', route: '/weekly' },
-    { name: 'Monthly', route: '/monthly' },
-    { name: 'Yearly', route: '/yearly' },
-    { name: 'Chinese', route: '/chinese' },
-    { name: 'Matches', route: '/match' },
-    { name: 'Dream Book', route: '/dreambook' },
-    { name: 'Horoscope', route: '/horoscope' },
+    { name: 'My Account Settings', route: '/account' },
+    { name: 'Daily Horoscope', route: '/daily' },
+    { name: 'Chinese Horoscope', route: '/chinese' },
+    { name: 'Love & Friendship Matcher', route: '/matches' },
+    { name: 'Dreambook', route: '/monthly' },
   ];
 
   const translateY = animation.interpolate({
@@ -63,19 +60,7 @@ const DropdownMenu = () => {
               setIsOpen(false);
             }}
           >
-            <FontAwesome6 
-              name={item.name === 'Dream Book' ? 'moon' : 
-                    item.name === 'Matches' ? 'heart' : 
-                    item.name === 'Chinese' ? 'dragon' : 
-                    item.name === 'Horoscope' ? 'star' : 
-                    item.name === 'Daily' ? 'sun' : 
-                    item.name === 'Weekly' ? 'calendar-week' : 
-                    item.name === 'Monthly' ? 'calendar' : 
-                    'calendar-days'} 
-              size={20} 
-              color="#FFAA1E" 
-              style={styles.menuIcon}
-            />
+            <Text style={styles.menuText}>{item.name}</Text>
             <FontAwesome6 name="chevron-right" size={16} color="#FFAA1E" style={styles.chevron} />
           </TouchableOpacity>
         ))}
@@ -103,7 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     borderRadius: 10,
     overflow: 'hidden',
-    width: 200,
+    width: 250,
   },
   menuItem: {
     flexDirection: 'row',
@@ -112,8 +97,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 170, 30, 0.2)',
   },
-  menuIcon: {
-    marginRight: 10,
+  menuText: {
+    color: '#FFAA1E',
+    fontSize: 16,
+    flex: 1,
   },
   chevron: {
     marginLeft: 'auto',
