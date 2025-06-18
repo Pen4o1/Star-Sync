@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Animated, Text } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Animated, Text, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const DropdownMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [animation] = useState(new Animated.Value(0));
   const router = useRouter();
 
-  const toggleMenu = () => {
-    const toValue = isOpen ? 0 : 1;
-    Animated.spring(animation, {
-      toValue,
-      friction: 8,
+  const openMenu = () => {
+    setIsOpen(true);
+    Animated.timing(animation, {
+      toValue: 1,
+      duration: 350,
       useNativeDriver: true,
     }).start();
-    setIsOpen(!isOpen);
+  };
+
+  const closeMenu = () => {
+    Animated.timing(animation, {
+      toValue: 0,
+      duration: 350,
+      useNativeDriver: true,
+    }).start(() => setIsOpen(false));
   };
 
   const menuItems = [
@@ -26,84 +35,111 @@ const DropdownMenu = () => {
     { name: 'Dreambook', route: '/monthly' },
   ];
 
-  const translateY = animation.interpolate({
+  const translateX = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [-20, 0],
-  });
-
-  const opacity = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
+    outputRange: [-SCREEN_WIDTH, 0],
   });
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
-        <FontAwesome6 name="bars" size={24} color="#FFAA1E" />
-      </TouchableOpacity>
+    <View style={styles.absoluteContainer} pointerEvents="box-none">
+      {/* Hamburger button, only visible when menu is closed */}
+      {!isOpen && (
+        <TouchableOpacity onPress={openMenu} style={styles.menuButton}>
+          <FontAwesome6 name="bars" size={24} color="#FFAA1E" />
+        </TouchableOpacity>
+      )}
 
-      <Animated.View 
-        style={[
-          styles.menu,
-          {
-            opacity,
-            transform: [{ translateY }],
-          }
-        ]}
-      >
-        {menuItems.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.menuItem}
-            onPress={() => {
-              router.push(item.route);
-              setIsOpen(false);
-            }}
-          >
-            <Text style={styles.menuText}>{item.name}</Text>
-            <FontAwesome6 name="chevron-right" size={16} color="#FFAA1E" style={styles.chevron} />
+      {/* Full-screen overlay menu */}
+      {isOpen && (
+        <Animated.View
+          style={[
+            styles.fullScreenMenu,
+            {
+              transform: [{ translateX }],
+              opacity: animation,
+            },
+          ]}
+        >
+          <TouchableOpacity style={styles.closeButton} onPress={closeMenu}>
+            <FontAwesome6 name="xmark" size={28} color="#FFAA1E" />
           </TouchableOpacity>
-        ))}
-      </Animated.View>
+          <View style={styles.menuList}>
+            {menuItems.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.menuItem}
+                onPress={() => {
+                  router.push(item.route);
+                  closeMenu();
+                }}
+              >
+                <Text style={styles.menuText}>{item.name}</Text>
+                <FontAwesome6 name="chevron-right" size={18} color="#FFAA1E" style={styles.chevron} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Animated.View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  absoluteContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    zIndex: 1000,
+    pointerEvents: 'box-none',
+  },
+  menuButton: {
     position: 'absolute',
     top: 40,
     left: 20,
-    zIndex: 1000,
-  },
-  menuButton: {
     padding: 10,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 10,
+    zIndex: 1001,
   },
-  menu: {
+  fullScreenMenu: {
     position: 'absolute',
-    top: 50,
+    top: 0,
     left: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    borderRadius: 10,
-    overflow: 'hidden',
-    width: 250,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    backgroundColor: 'rgba(0,0,0,0.97)',
+    zIndex: 1002,
+    paddingTop: 60,
+    paddingHorizontal: 30,
+    justifyContent: 'flex-start',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 40,
+    right: 30,
+    zIndex: 1003,
+    padding: 10,
+  },
+  menuList: {
+    marginTop: 60,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
+    paddingVertical: 22,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 170, 30, 0.2)',
+    borderBottomColor: 'rgba(255, 170, 30, 0.1)',
   },
   menuText: {
     color: '#FFAA1E',
-    fontSize: 16,
+    fontSize: 20,
     flex: 1,
+    fontWeight: 'bold',
   },
   chevron: {
-    marginLeft: 'auto',
+    marginLeft: 10,
   },
 });
 
