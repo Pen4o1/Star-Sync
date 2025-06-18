@@ -10,31 +10,45 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { ZODIAC_SIGNS } from '../../constants/zodiacData'
 import { getDailyHoroscope } from '../../services/horoscopeApi'
-import { USER_ZODIAC_SIGN_ID, USER_BIRTHDATE } from '../../constants/userData'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getUserZodiacSign } from '../../constants/userData'
 
 export default function DailyHoroscope() {
   const [horoscope, setHoroscope] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [userBirthdate, setUserBirthdate] = useState(null)
+  const [zodiacId, setZodiacId] = useState(null)
 
   useEffect(() => {
-    fetchHoroscope()
+    const loadUserData = async () => {
+      const birthdate = await AsyncStorage.getItem('userBirthDate')
+      setUserBirthdate(birthdate)
+      if (birthdate) {
+        setZodiacId(getUserZodiacSign(birthdate))
+      }
+    }
+    loadUserData()
   }, [])
 
-  const fetchHoroscope = async () => {
-    try {
-      setLoading(true)
-      const today = new Date().toISOString().split('T')[0]
-      const data = await getDailyHoroscope(USER_ZODIAC_SIGN_ID, today)
-      setHoroscope(data)
-    } catch (error) {
-      console.error('Error fetching daily horoscope:', error)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (!zodiacId) return
+    const fetchHoroscope = async () => {
+      try {
+        setLoading(true)
+        const today = new Date().toISOString().split('T')[0]
+        const data = await getDailyHoroscope(zodiacId, today)
+        setHoroscope(data)
+      } catch (error) {
+        console.error('Error fetching daily horoscope:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
+    fetchHoroscope()
+  }, [zodiacId])
 
-  const userSign = ZODIAC_SIGNS.find(sign => sign.id === USER_ZODIAC_SIGN_ID)
+  const userSign = ZODIAC_SIGNS.find(sign => sign.id === zodiacId)
   const overviewSection = horoscope?.horoscopes?.find(section => section.name === 'Overview')
 
   const toggleExpand = () => {
@@ -53,11 +67,13 @@ export default function DailyHoroscope() {
         <ScrollView style={styles.scrollView}>
           <Text style={styles.title}>Your Daily Horoscope</Text>
 
-          <View style={styles.signContainer}>
-            <Text style={styles.signSymbol}>{userSign.symbol}</Text>
-            <Text style={styles.signName}>{userSign.name}</Text>
-            <Text style={styles.birthdate}>Born on {USER_BIRTHDATE}</Text>
-          </View>
+          {userSign && (
+            <View style={styles.signContainer}>
+              <Text style={styles.signSymbol}>{userSign.symbol}</Text>
+              <Text style={styles.signName}>{userSign.name}</Text>
+              <Text style={styles.birthdate}>Born on {userBirthdate}</Text>
+            </View>
+          )}
 
           {loading ? (
             <View style={styles.loadingContainer}>
@@ -87,7 +103,7 @@ export default function DailyHoroscope() {
               <Text style={styles.errorText}>Failed to load horoscope</Text>
               <TouchableOpacity
                 style={styles.retryButton}
-                onPress={fetchHoroscope}
+                onPress={() => zodiacId && fetchHoroscope()}
               >
                 <Text style={styles.retryButtonText}>Retry</Text>
               </TouchableOpacity>

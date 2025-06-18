@@ -8,30 +8,44 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { CHINESE_ZODIAC } from '../../constants/zodiacData'
 import { getChineseDailyHoroscope } from '../../services/horoscopeApi'
-import { USER_CHINESE_ZODIAC_ID, USER_BIRTHDATE } from '../../constants/userData'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getUserChineseZodiac } from '../../constants/userData'
 
 export default function ChineseHoroscope() {
   const [horoscope, setHoroscope] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [userBirthdate, setUserBirthdate] = useState(null)
+  const [chineseZodiacId, setChineseZodiacId] = useState(null)
 
   useEffect(() => {
-    fetchHoroscope()
+    const loadUserData = async () => {
+      const birthdate = await AsyncStorage.getItem('userBirthDate')
+      setUserBirthdate(birthdate)
+      if (birthdate) {
+        setChineseZodiacId(getUserChineseZodiac(birthdate))
+      }
+    }
+    loadUserData()
   }, [])
 
-  const fetchHoroscope = async () => {
-    try {
-      setLoading(true)
-      const today = new Date().toISOString().split('T')[0]
-      const data = await getChineseDailyHoroscope(USER_CHINESE_ZODIAC_ID, today)
-      setHoroscope(data)
-    } catch (error) {
-      console.error('Error fetching Chinese horoscope:', error)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (!chineseZodiacId) return
+    const fetchHoroscope = async () => {
+      try {
+        setLoading(true)
+        const today = new Date().toISOString().split('T')[0]
+        const data = await getChineseDailyHoroscope(chineseZodiacId, today)
+        setHoroscope(data)
+      } catch (error) {
+        console.error('Error fetching Chinese horoscope:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
+    fetchHoroscope()
+  }, [chineseZodiacId])
 
-  const userAnimal = CHINESE_ZODIAC.find(animal => animal.id === USER_CHINESE_ZODIAC_ID)
+  const userAnimal = CHINESE_ZODIAC.find(animal => animal.id === chineseZodiacId)
 
   return (
     <View style={styles.container}>
@@ -39,11 +53,13 @@ export default function ChineseHoroscope() {
         <ScrollView style={styles.scrollView}>
           <Text style={styles.title}>Your Chinese Horoscope</Text>
 
-          <View style={styles.animalContainer}>
-            <Text style={styles.animalName}>{userAnimal.name}</Text>
-            <Text style={styles.animalElement}>{userAnimal.element}</Text>
-            <Text style={styles.birthdate}>Born on {USER_BIRTHDATE}</Text>
-          </View>
+          {userAnimal && (
+            <View style={styles.animalContainer}>
+              <Text style={styles.animalName}>{userAnimal.name}</Text>
+              <Text style={styles.animalElement}>{userAnimal.element}</Text>
+              <Text style={styles.birthdate}>Born on {userBirthdate}</Text>
+            </View>
+          )}
 
           {loading ? (
             <View style={styles.loadingContainer}>
