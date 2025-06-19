@@ -1,6 +1,3 @@
-// User's birthdate - Update this with the actual birthdate
-export const USER_BIRTHDATE = '1990-01-01'; // Format: YYYY-MM-DD
-
 // Calculate zodiac sign based on birthdate
 export const getUserZodiacSign = (birthdate) => {
   const date = new Date(birthdate);
@@ -28,9 +25,3 @@ export const getUserChineseZodiac = (birthdate) => {
   const zodiacIndex = (year - 4) % 12;
   return zodiacIndex + 1; // Adding 1 to match the API's 1-based indexing
 };
-
-// Get user's zodiac sign ID
-export const USER_ZODIAC_SIGN_ID = getUserZodiacSign(USER_BIRTHDATE);
-
-// Get user's Chinese zodiac sign ID
-export const USER_CHINESE_ZODIAC_ID = getUserChineseZodiac(USER_BIRTHDATE);

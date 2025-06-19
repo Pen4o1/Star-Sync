@@ -7,24 +7,36 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Image,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { FontAwesome } from "@expo/vector-icons";
-import CustomButton from "../../components/CustomButton";
-import { Redirect, router, useNavigation } from "expo-router";
+import { router } from "expo-router";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const SignIn = () => {
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const navigation = useNavigation();
+  const [name, setName] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) setDate(selectedDate);
   };
-  const handleSignIn = () => {
-    router.push("/Home");
-    console.log("pressed");
+
+  const handleSignIn = async () => {
+    try {
+      await AsyncStorage.setItem('userName', name);
+      // Format date as YYYY-MM-DD in local time
+      const pad = n => n < 10 ? '0' + n : n;
+      const localDateString = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+      await AsyncStorage.setItem('userBirthDate', localDateString);
+      router.push("/Home");
+    } catch (e) {
+      alert('Failed to save user data');
+    }
   };
+
   return (
     <ImageBackground
       source={require("../../assets/images/Auth/SignInBG.png")}
@@ -32,8 +44,8 @@ const SignIn = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.container}>
-          <Text style={styles.heading}>Welcome Back!</Text>
-          <Text style={styles.subHeading}>we missed you</Text>
+          <Text style={styles.heading}>Welcome!</Text>
+          <Text style={styles.subHeading}>Enter your name and date of birth</Text>
           <LinearGradient
             colors={[
               "rgba(179, 121, 223, 0.29)",
@@ -45,114 +57,51 @@ const SignIn = () => {
             style={styles.cardContainer}
           >
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, styles.labelWhite]}>Username</Text>
+              <Text style={[styles.label, styles.labelWhite]}>Name</Text>
               <View style={styles.inputWrapper}>
-                <FontAwesome
-                  name="user"
-                  size={24}
-                  color="#FFFFFF"
-                  style={styles.icon}
-                />
                 <TextInput
                   style={[styles.input, styles.inputWhite]}
-                  placeholder="Username"
+                  placeholder="Enter your name"
                   placeholderTextColor="#FFFFFF"
+                  value={name}
+                  onChangeText={setName}
                 />
               </View>
             </View>
-
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, styles.labelWhite]}>Password</Text>
-              <View style={[styles.inputWrapper, styles.passwordInput]}>
-                <FontAwesome
-                  name="lock"
-                  size={24}
-                  color="#FFFFFF"
-                  style={styles.icon}
+              <Text style={[styles.label, styles.labelWhite]}>Date of Birth</Text>
+              <TouchableOpacity
+                style={styles.inputWrapper}
+                onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.input, styles.inputWhite]}>
+                  {date.toISOString().split('T')[0]}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                  maximumDate={new Date()}
                 />
-                <TextInput
-                  style={[styles.input, styles.inputWhite]}
-                  placeholder="Password"
-                  placeholderTextColor="#FFFFFF"
-                  secureTextEntry={!passwordVisible}
-                />
-                <TouchableOpacity onPress={togglePasswordVisibility}>
-                  <FontAwesome
-                    name={passwordVisible ? "eye-slash" : "eye"}
-                    size={24}
-                    color="#FFFFFF"
-                    style={styles.eyeIcon}
-                  />
-                </TouchableOpacity>
-              </View>
+              )}
             </View>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-
-            <CustomButton
-              text="Log in"
+            <TouchableOpacity
+              style={styles.loginButton}
               onPress={handleSignIn}
-              borderColor="transparent"
-            />
-
-            <View style={styles.otherSignInOptions}>
-              <View style={styles.hrContainer}>
-                <LinearGradient
-                  colors={[
-                    "rgba(217, 217, 217, 0.1)",
-                    "rgba(217, 217, 217, 0.7)",
-                  ]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.hr}
-                />
-                <Text style={styles.otherSignInText}>Or continue with</Text>
-                <LinearGradient
-                  colors={[
-                    "rgba(217, 217, 217, 0.7)",
-                    "rgba(217, 217, 217, 0.1)",
-                  ]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.hr}
-                />
-              </View>
-
-              <View style={styles.socialIconsContainer}>
-                <SocialIcon
-                  onPress={() => console.log("Google sign in pressed")}
-                  source={require("../../assets/images/Auth/GoogleIcon.png")}
-                />
-                <SocialIcon
-                  onPress={() => console.log("Facebook sign in pressed")}
-                  source={require("../../assets/images/Auth/FacebookIcon.png")}
-                />
-                <SocialIcon
-                  onPress={() => console.log("Apple sign in pressed")}
-                  source={require("../../assets/images/Auth/AppleIcon.png")}
-                />
-              </View>
-            </View>
-
-            <View style={styles.textContainer}>
-              <Text style={styles.signUpText}>
-                Don't have an account?
-                <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-                  <Text style={styles.signUpLink}>Sign Up</Text>
-                </TouchableOpacity>
-              </Text>
-            </View>
+              disabled={!name}
+            >
+              <Text style={styles.loginButtonText}>Continue</Text>
+            </TouchableOpacity>
           </LinearGradient>
         </View>
       </ScrollView>
     </ImageBackground>
   );
 };
-
-const SocialIcon = ({ onPress, source }) => (
-  <TouchableOpacity onPress={onPress} style={styles.socialIconButton}>
-    <Image source={source} style={styles.socialIcon} />
-  </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
   backgroundImage: {
@@ -185,11 +134,11 @@ const styles = StyleSheet.create({
     width: "90%",
   },
   inputContainer: {
-    marginBottom: 10,
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
-    marginBottom: 15,
+    marginBottom: 10,
   },
   labelWhite: {
     color: "#FFFFFF",
@@ -201,10 +150,9 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     paddingLeft: 20,
     borderRadius: 20,
-    marginBottom: 15,
-  },
-  passwordInput: {
-    position: "relative",
+    marginBottom: 0,
+    minHeight: 48,
+    backgroundColor: 'rgba(255,255,255,0.05)'
   },
   input: {
     flex: 1,
@@ -212,71 +160,24 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
     backgroundColor: "transparent",
+    color: "#FFFFFF",
+    fontSize: 16,
   },
   inputWhite: {
     color: "#FFFFFF",
   },
-  icon: {
-    marginRight: 10,
-  },
-  eyeIcon: {
-    position: "absolute",
-    right: 10,
-    top: -10,
-  },
-  hrContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 10,
-  },
-  hr: {
-    height: 1,
-    width: "30%",
-  },
-  otherSignInOptions: {
-    marginTop: 15,
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  otherSignInText: {
-    fontSize: 16,
-    color: "#B6B6B6",
-    marginHorizontal: 10,
-  },
-  socialIconsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
+  loginButton: {
+    backgroundColor: "#FFAA1E",
+    padding: 15,
+    borderRadius: 20,
     alignItems: "center",
     marginTop: 20,
   },
-  socialIcon: {
-    width: 35,
-    height: 35,
-    marginHorizontal: 10,
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
-  textContainer: {
-    marginTop: 20,
-    alignItems: "center",
-    gap: 10,
-  },
-  signUpText: {
-    color: "#FFFFFF",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  signUpLink: {
-    color: "#FFAA1E",
-    marginBottom: -4,
-    marginLeft: 5,
-  },
-  forgotPasswordText: {
-    color: "#C4C4C4",
-    textAlign: "right",
-    marginBottom: 30,
-  },
-  socialIconButton: {},
 });
 
 export default SignIn;
