@@ -7,22 +7,15 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import UserDatePicker from '../../components/UserDatePicker';
 
 const SignIn = () => {
   const [name, setName] = useState("");
   const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(Platform.OS === 'ios');
-    if (selectedDate) setDate(selectedDate);
-  };
 
   const handleSignIn = async () => {
     try {
@@ -44,8 +37,6 @@ const SignIn = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.container}>
-          <Text style={styles.heading}>Welcome!</Text>
-          <Text style={styles.subHeading}>Enter your name and date of birth</Text>
           <LinearGradient
             colors={[
               "rgba(179, 121, 223, 0.29)",
@@ -56,6 +47,8 @@ const SignIn = () => {
             end={{ x: 1, y: 1 }}
             style={styles.cardContainer}
           >
+            <Text style={styles.heading}>Welcome!</Text>
+            <Text style={styles.subHeading}>Enter your name and date of birth</Text>
             <View style={styles.inputContainer}>
               <Text style={[styles.label, styles.labelWhite]}>Name</Text>
               <View style={styles.inputWrapper}>
@@ -68,27 +61,7 @@ const SignIn = () => {
                 />
               </View>
             </View>
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, styles.labelWhite]}>Date of Birth</Text>
-              <TouchableOpacity
-                style={styles.inputWrapper}
-                onPress={() => setShowDatePicker(true)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.input, styles.inputWhite]}>
-                  {date.toISOString().split('T')[0]}
-                </Text>
-              </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={date}
-                  mode="date"
-                  display="default"
-                  onChange={handleDateChange}
-                  maximumDate={new Date()}
-                />
-              )}
-            </View>
+            <UserDatePicker value={date} onChange={setDate} />
             <TouchableOpacity
               style={styles.loginButton}
               onPress={handleSignIn}
@@ -117,21 +90,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  cardContainer: {
+    padding: 20,
+    borderRadius: 30,
+    width: "90%",
+  },
   heading: {
     fontSize: 30,
     fontWeight: "bold",
     color: "#EFEFEF",
     marginBottom: 15,
+    textAlign: 'center',
   },
   subHeading: {
     fontSize: 14,
     color: "#A4A4A4",
     marginBottom: 25,
-  },
-  cardContainer: {
-    padding: 20,
-    borderRadius: 30,
-    width: "90%",
+    textAlign: 'center',
   },
   inputContainer: {
     marginBottom: 20,
@@ -150,7 +125,6 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     paddingLeft: 20,
     borderRadius: 20,
-    marginBottom: 0,
     minHeight: 48,
     backgroundColor: 'rgba(255,255,255,0.05)'
   },

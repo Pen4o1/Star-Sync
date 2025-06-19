@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated, Text, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage'
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -15,20 +14,18 @@ const DropdownMenu = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchUserData = async () => {
       try {
         const storedUserName = await AsyncStorage.getItem('userName');
         const storedBirthdate = await AsyncStorage.getItem('userBirthDate');
-        if (storedUserName) {
-          setUserName(storedUserName);
-          setUserBirthdate(storedBirthdate);
-        }
+        if (storedUserName) setUserName(storedUserName);
+        if (storedBirthdate) setUserBirthdate(storedBirthdate);
       } catch (error) {
-        console.error('Failed to fetch userName:', error);
+        console.error('Failed to fetch user data:', error);
       }
     };
-  
-    fetchUserName();
+
+    fetchUserData();
   }, []);
 
   const openMenu = () => {
@@ -49,7 +46,6 @@ const DropdownMenu = () => {
   };
 
   const menuItems = [
-    
     { name: 'My Account Settings', route: '/account' },
     { name: 'Daily Horoscope', route: '/daily' },
     { name: 'Chinese Horoscope', route: '/chinese' },
@@ -70,7 +66,6 @@ const DropdownMenu = () => {
         </TouchableOpacity>
       )}
 
-      {/* Full-screen overlay menu */}
       {isOpen && (
         <Animated.View
           style={[
@@ -90,7 +85,12 @@ const DropdownMenu = () => {
           ) : null}
 
           {userBirthdate ? (
-            <Text style={styles.userBirthdate}>Birth date: {userBirthdate}</Text>
+            <View style={styles.userHeader}>
+              <Text style={styles.userBirthdate}>Birth date: {userBirthdate}</Text>
+              <Text style={styles.linkText} onPress={() => router.push('/edit')}>
+                Edit
+              </Text>
+            </View>
           ) : null}
 
           <View style={styles.menuList}>
@@ -152,16 +152,26 @@ const styles = StyleSheet.create({
     zIndex: 1003,
     padding: 10,
   },
+  userHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+  },
   userName: {
     color: '#FFAA1E',
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   userBirthdate: {
     color: '#FFAA1E',
     fontSize: 16,
-    marginBottom: 20,
+  },
+  linkText: {
+    color: '#FFAA1E',
+    fontSize: 16,
+    textDecorationLine: 'underline',
   },
   menuList: {
     marginTop: 60,
