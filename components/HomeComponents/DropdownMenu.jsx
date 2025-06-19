@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated, Text, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const DropdownMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [animation] = useState(new Animated.Value(0));
+  const [userName, setUserName] = useState('');
+  const [userBirthdate, setUserBirthdate] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const storedUserName = await AsyncStorage.getItem('userName');
+        const storedBirthdate = await AsyncStorage.getItem('userBirthDate');
+        if (storedUserName) {
+          setUserName(storedUserName);
+          setUserBirthdate(storedBirthdate);
+        }
+      } catch (error) {
+        console.error('Failed to fetch userName:', error);
+      }
+    };
+  
+    fetchUserName();
+  }, []);
 
   const openMenu = () => {
     setIsOpen(true);
@@ -28,6 +49,7 @@ const DropdownMenu = () => {
   };
 
   const menuItems = [
+    
     { name: 'My Account Settings', route: '/account' },
     { name: 'Daily Horoscope', route: '/daily' },
     { name: 'Chinese Horoscope', route: '/chinese' },
@@ -42,7 +64,6 @@ const DropdownMenu = () => {
 
   return (
     <View style={styles.absoluteContainer} pointerEvents="box-none">
-      {/* Hamburger button, only visible when menu is closed */}
       {!isOpen && (
         <TouchableOpacity onPress={openMenu} style={styles.menuButton}>
           <FontAwesome6 name="bars" size={24} color="#FFAA1E" />
@@ -63,6 +84,15 @@ const DropdownMenu = () => {
           <TouchableOpacity style={styles.closeButton} onPress={closeMenu}>
             <FontAwesome6 name="xmark" size={28} color="#FFAA1E" />
           </TouchableOpacity>
+
+          {userName ? (
+            <Text style={styles.userName}>Hello {userName}</Text>
+          ) : null}
+
+          {userBirthdate ? (
+            <Text style={styles.userBirthdate}>Birth date: {userBirthdate}</Text>
+          ) : null}
+
           <View style={styles.menuList}>
             {menuItems.map((item, index) => (
               <TouchableOpacity
@@ -121,6 +151,17 @@ const styles = StyleSheet.create({
     right: 30,
     zIndex: 1003,
     padding: 10,
+  },
+  userName: {
+    color: '#FFAA1E',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  userBirthdate: {
+    color: '#FFAA1E',
+    fontSize: 16,
+    marginBottom: 20,
   },
   menuList: {
     marginTop: 60,
