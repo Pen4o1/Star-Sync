@@ -6,5 +6,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "app/(tabs)/chinese.jsx", "app/(tabs)/daily.jsx", "app/(tabs)/dreambook.jsx", "app/(tabs)/match.jsx", "app/(tabs)/horoscope.jsx", "components/AdBanner.jsx", "app/(tabs)/yearly.jsx", "app/(tabs)/weekly.jsx", "constants/zodiacData.js", "services/horoscopeApi.js"  ]
+, "app/(tabs)/chinese.jsx", "app/(tabs)/daily.jsx", "app/(tabs)/dreambook.jsx", "app/(tabs)/matches.jsx", "app/(tabs)/horoscope.jsx", "components/AdBanner.jsx", "app/(tabs)/yearly.jsx", "app/(tabs)/weekly.jsx", "constants/zodiacData.js", "services/horoscopeApi.js"  ]
 }
