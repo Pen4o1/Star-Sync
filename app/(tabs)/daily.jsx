@@ -4,145 +4,138 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ZODIAC_SIGNS } from '../../constants/zodiacData'
-import { getDailyHoroscope } from '../../services/horoscopeApi'
+import {
+  getDailyHoroscope,
+  getWeeklyHoroscope,
+  getYearlyHoroscope,
+} from '../../services/horoscopeApi'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getUserZodiacSign } from '../../constants/userData'
+import HoroscopeSection from '../../components/DetailComponents/HoroscopeSection'
 
 export default function DailyHoroscopeScreen() {
-  const [selectedSign, setSelectedSign] = useState(1)
   const [horoscope, setHoroscope] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [activeSection, setActiveSection] = useState('Overview')
+  const [birthdate, setBirthdate] = useState(null)
+  const [zodiacId, setZodiacId] = useState(null)
+  const [selectedPeriod, setSelectedPeriod] = useState('daily')
 
   useEffect(() => {
-    fetchHoroscope()
-  }, [selectedSign])
+    const loadUserZodiac = async () => {
+      try {
+        const storedBirthdate = await AsyncStorage.getItem('userBirthDate')
+        setBirthdate(storedBirthdate)
+        if (storedBirthdate) {
+          const zodiac = getUserZodiacSign(storedBirthdate)
+          setZodiacId(zodiac)
+        }
+      } catch (error) {
+        console.error('Error loading user birthdate:', error)
+      }
+    }
+    loadUserZodiac()
+  }, [])
 
   const fetchHoroscope = async () => {
     try {
+      if (!zodiacId) return
+
       setLoading(true)
+      let data = null
+
       const today = new Date().toISOString().split('T')[0]
-      const data = await getDailyHoroscope(selectedSign, today)
+
+      if (selectedPeriod === 'daily') {
+        data = await getDailyHoroscope(zodiacId, today)
+      } else if (selectedPeriod === 'weekly') {
+        data = await getWeeklyHoroscope(zodiacId)
+      } else if (selectedPeriod === 'yearly') {
+        data = await getYearlyHoroscope(zodiacId)
+      }
+
       setHoroscope(data)
     } catch (error) {
-      console.error('Error fetching daily horoscope:', error)
+      console.error('Error fetching horoscope:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSignSelect = (signId) => {
-    setSelectedSign(signId)
-  }
+  useEffect(() => {
+    fetchHoroscope()
+  }, [zodiacId, selectedPeriod])
 
-  const toggleSection = (sectionName) => {
-    setActiveSection(sectionName)
+  const userSign = ZODIAC_SIGNS.find((sign) => sign.id === zodiacId)
+
+  const renderPeriodSelector = () => {
+    const periods = ['daily', 'weekly', 'yearly']
+
+    return (
+      <View style={styles.periodSelector}>
+        {periods.map((period) => (
+          <TouchableOpacity
+            key={period}
+            style={[
+              styles.periodButton,
+              selectedPeriod === period && styles.selectedButton,
+            ]}
+            onPress={() => setSelectedPeriod(period)}
+          >
+            <Text
+              style={[
+                styles.periodButtonText,
+                selectedPeriod === period && styles.selectedButtonText,
+              ]}
+            >
+              {period.charAt(0).toUpperCase() + period.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    )
   }
 
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
         <ScrollView style={styles.scrollView}>
-          <Text style={styles.title}>Daily Horoscope</Text>
+          <Text style={styles.title}>Your {selectedPeriod} Horoscope</Text>
 
-          <View style={styles.signsContainer}>
-            {ZODIAC_SIGNS.map((sign) => (
-              <TouchableOpacity
-                key={sign.id}
-                style={[
-                  styles.signButton,
-                  selectedSign === sign.id && styles.selectedSign,
-                ]}
-                onPress={() => handleSignSelect(sign.id)}
-              >
-                <Text style={styles.signSymbol}>{sign.symbol}</Text>
-                <Text style={styles.signName}>{sign.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {userSign && (
+            <View style={styles.signContainer}>
+              <Text style={styles.signSymbol}>{userSign.symbol}</Text>
+              <Text style={styles.signName}>{userSign.name}</Text>
+              <Text style={styles.birthdate}>Born on {birthdate}</Text>
+            </View>
+          )}
+
+          {renderPeriodSelector()}
 
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#FFAA1E" />
-              <Text style={styles.loadingText}>
-                Loading your daily horoscope...
-              </Text>
+              <Text style={styles.loadingText}>Loading your horoscope...</Text>
             </View>
           ) : horoscope ? (
             <View style={styles.horoscopeContainer}>
               <Text style={styles.date}>{horoscope.date}</Text>
-              <Text style={styles.signName}>{horoscope.sign_name}</Text>
 
-              <View style={styles.sectionsContainer}>
-                {horoscope.horoscopes.map((section) => (
-                  <TouchableOpacity
+              {horoscope.horoscopes ? (
+                horoscope.horoscopes.map((section) => (
+                  <HoroscopeSection
                     key={section.name}
-                    style={[
-                      styles.sectionButton,
-                      activeSection === section.name &&
-                        styles.activeSectionButton,
-                    ]}
-                    onPress={() => toggleSection(section.name)}
-                  >
-                    <Text
-                      style={[
-                        styles.sectionButtonText,
-                        activeSection === section.name &&
-                          styles.activeSectionButtonText,
-                      ]}
-                    >
-                      {section.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <View style={styles.sectionContent}>
-                {horoscope.horoscopes
-                  .filter((section) => section.name === activeSection)
-                  .map((section) => (
-                    <Text key={section.name} style={styles.horoscopeText}>
-                      {section.text}
-                    </Text>
-                  ))}
-              </View>
-
-              <View style={styles.navigationContainer}>
-                <TouchableOpacity
-                  style={styles.navButton}
-                  onPress={() => {
-                    const currentIndex = horoscope.horoscopes.findIndex(
-                      (s) => s.name === activeSection
-                    )
-                    const prevIndex =
-                      currentIndex > 0
-                        ? currentIndex - 1
-                        : horoscope.horoscopes.length - 1
-                    setActiveSection(horoscope.horoscopes[prevIndex].name)
-                  }}
-                >
-                  <Text style={styles.navButtonText}>Previous</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.navButton}
-                  onPress={() => {
-                    const currentIndex = horoscope.horoscopes.findIndex(
-                      (s) => s.name === activeSection
-                    )
-                    const nextIndex =
-                      currentIndex < horoscope.horoscopes.length - 1
-                        ? currentIndex + 1
-                        : 0
-                    setActiveSection(horoscope.horoscopes[nextIndex].name)
-                  }}
-                >
-                  <Text style={styles.navButtonText}>Next</Text>
-                </TouchableOpacity>
-              </View>
+                    title={section.name}
+                    text={section.text}
+                  />
+                ))
+              ) : (
+                <Text style={styles.singleText}>{horoscope.horoscope}</Text>
+              )}
             </View>
           ) : (
             <View style={styles.errorContainer}>
@@ -162,15 +155,9 @@ export default function DailyHoroscopeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gradient: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+  gradient: { flex: 1 },
+  scrollView: { flex: 1 },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -179,34 +166,50 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
-  signsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    padding: 10,
-  },
-  signButton: {
-    width: 80,
-    height: 80,
-    margin: 5,
-    borderRadius: 40,
-    backgroundColor: '#333',
+  signContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selectedSign: {
-    backgroundColor: '#FFAA1E',
+    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    margin: 10,
+    borderRadius: 10,
   },
   signSymbol: {
-    fontSize: 24,
-    color: '#fff',
+    fontSize: 48,
+    color: '#FFAA1E',
+    marginBottom: 10,
   },
   signName: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: 5,
+  },
+  birthdate: {
+    color: '#FFAA1E',
+    fontSize: 16,
+  },
+  periodSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  periodButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 6,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  selectedButton: {
+    backgroundColor: '#FFAA1E',
+  },
+  periodButtonText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  selectedButtonText: {
+    color: '#000',
+    fontWeight: 'bold',
   },
   loadingContainer: {
     padding: 20,
@@ -228,10 +231,10 @@ const styles = StyleSheet.create({
   date: {
     color: '#FFAA1E',
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 10,
     textAlign: 'center',
   },
-  horoscopeText: {
+  singleText: {
     color: '#fff',
     fontSize: 16,
     lineHeight: 24,
@@ -254,54 +257,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  sectionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 15,
-    flexWrap: 'wrap',
-  },
-  sectionButton: {
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#333',
-    marginBottom: 10,
-    minWidth: '48%',
-    alignItems: 'center',
-  },
-  activeSectionButton: {
-    backgroundColor: '#FFAA1E',
-  },
-  sectionButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  activeSectionButtonText: {
-    color: '#000',
-  },
-  sectionContent: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: 5,
-  },
-  navigationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  navButton: {
-    backgroundColor: '#FFAA1E',
-    padding: 10,
-    borderRadius: 5,
-    minWidth: 100,
-    alignItems: 'center',
-  },
-  navButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
