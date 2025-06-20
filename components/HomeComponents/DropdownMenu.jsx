@@ -3,7 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Animated, Text, Dimensions } from '
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import userEvents from  '../../app/utils/userEvents';
+import userEvents from '../../app/utils/userEvents';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -28,17 +28,17 @@ const DropdownMenu = () => {
 
     fetchUserData();
 
-  // Listen for manual refresh
-  const refreshHandler = () => {
-    fetchUserData();
-  };
+    // Listen for manual refresh
+    const refreshHandler = () => {
+      fetchUserData();
+    };
 
-  userEvents.on('refreshUser', refreshHandler);
+    userEvents.on('refreshUser', refreshHandler);
 
-  return () => {
-    userEvents.off('refreshUser', refreshHandler); // Clean up
-  };
-}, []);
+    return () => {
+      userEvents.off('refreshUser', refreshHandler); // Clean up
+    };
+  }, []);
 
   const openMenu = () => {
     setIsOpen(true);
@@ -99,7 +99,10 @@ const DropdownMenu = () => {
           {userBirthdate ? (
             <View style={styles.userHeader}>
               <Text style={styles.userBirthdate}>Birth date: {userBirthdate}</Text>
-              <Text style={styles.linkText} onPress={() => router.push('/EditUser')}>
+              <Text style={styles.linkText} onPress={() => {
+                router.push('/(auth)/EditUser');
+                closeMenu();
+              }}>
                 Edit
               </Text>
             </View>

@@ -30,18 +30,18 @@ export default function ChineseHoroscope() {
 
   useEffect(() => {
     if (!chineseZodiacId) return
-    const fetchHoroscope = async () => {
-      try {
-        setLoading(true)
-        const today = new Date().toISOString().split('T')[0]
+  const fetchHoroscope = async () => {
+    try {
+      setLoading(true)
+      const today = new Date().toISOString().split('T')[0]
         const data = await getChineseDailyHoroscope(chineseZodiacId, today)
-        setHoroscope(data)
-      } catch (error) {
-        console.error('Error fetching Chinese horoscope:', error)
-      } finally {
-        setLoading(false)
-      }
+      setHoroscope(data)
+    } catch (error) {
+      console.error('Error fetching Chinese horoscope:', error)
+    } finally {
+      setLoading(false)
     }
+  }
     fetchHoroscope()
   }, [chineseZodiacId])
 
@@ -54,11 +54,11 @@ export default function ChineseHoroscope() {
           <Text style={styles.title}>Your Chinese Horoscope</Text>
 
           {userAnimal && (
-            <View style={styles.animalContainer}>
-              <Text style={styles.animalName}>{userAnimal.name}</Text>
-              <Text style={styles.animalElement}>{userAnimal.element}</Text>
+          <View style={styles.animalContainer}>
+            <Text style={styles.animalName}>{userAnimal.name}</Text>
+            <Text style={styles.animalElement}>{userAnimal.element}</Text>
               <Text style={styles.birthdate}>Born on {userBirthdate}</Text>
-            </View>
+          </View>
           )}
 
           {loading ? (

@@ -42,7 +42,7 @@ const Index = () => {
   const navigation = useNavigation();
   const handleNext = () => {
     if (currentIndex === onboardingData.length - 1) {
-      router.push("SignIn");
+      router.push("/(auth)/SignIn");
     } else {
       if (swiperRef.current) {
         swiperRef.current.scrollBy(1);

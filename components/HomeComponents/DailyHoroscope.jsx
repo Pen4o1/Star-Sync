@@ -33,18 +33,18 @@ export default function DailyHoroscope() {
 
   useEffect(() => {
     if (!zodiacId) return
-    const fetchHoroscope = async () => {
-      try {
-        setLoading(true)
-        const today = new Date().toISOString().split('T')[0]
+  const fetchHoroscope = async () => {
+    try {
+      setLoading(true)
+      const today = new Date().toISOString().split('T')[0]
         const data = await getDailyHoroscope(zodiacId, today)
-        setHoroscope(data)
-      } catch (error) {
-        console.error('Error fetching daily horoscope:', error)
-      } finally {
-        setLoading(false)
-      }
+      setHoroscope(data)
+    } catch (error) {
+      console.error('Error fetching daily horoscope:', error)
+    } finally {
+      setLoading(false)
     }
+  }
     fetchHoroscope()
   }, [zodiacId])
 
@@ -68,11 +68,11 @@ export default function DailyHoroscope() {
           <Text style={styles.title}>Your Daily Horoscope</Text>
 
           {userSign && (
-            <View style={styles.signContainer}>
-              <Text style={styles.signSymbol}>{userSign.symbol}</Text>
-              <Text style={styles.signName}>{userSign.name}</Text>
+          <View style={styles.signContainer}>
+            <Text style={styles.signSymbol}>{userSign.symbol}</Text>
+            <Text style={styles.signName}>{userSign.name}</Text>
               <Text style={styles.birthdate}>Born on {userBirthdate}</Text>
-            </View>
+          </View>
           )}
 
           {loading ? (

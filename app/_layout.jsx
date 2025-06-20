@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
-import { Slot, SplashScreen, Stack } from "expo-router";
+import { Slot, SplashScreen, Stack, useRouter, useSegments } from "expo-router";
 import ThemeContext from "../theme/ThemeContext";
 import theme from "../theme/Theme";
 import { EventRegister } from "react-native-event-listeners";
 import DropdownMenu from "../components/HomeComponents/DropdownMenu";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const _layout = () => {
   const [fontsLoaded, error] = useFonts({
@@ -20,6 +21,10 @@ const _layout = () => {
     "Nunito-SemiBold": require("../assets/fonts/Nunito-SemiBold.ttf"),
   });
   const [darkMode, setDarkMode] = useState(false);
+  const [isUserSignedIn, setIsUserSignedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     const listener = EventRegister.addEventListener("ChangeTheme", (data) => {
@@ -29,15 +34,55 @@ const _layout = () => {
       EventRegister.removeAllListeners(listener);
     };
   }, [darkMode]);
+
+  useEffect(() => {
+    const checkUserSignIn = async () => {
+      try {
+        const userName = await AsyncStorage.getItem('userName');
+        const userBirthDate = await AsyncStorage.getItem('userBirthDate');
+        
+        if (userName && userBirthDate) {
+          setIsUserSignedIn(true);
+          // If user is signed in and on index or auth pages (except EditUser), redirect to Home
+          if ((segments[0] === '(auth)' && segments[1] !== 'EditUser') || segments.length === 0) {
+            setTimeout(() => {
+              router.replace('/Home');
+            }, 100);
+          }
+        } else {
+          setIsUserSignedIn(false);
+          // If user is not signed in and not on index or auth pages, redirect to index
+          if (segments[0] !== '(auth)' && segments.length > 0) {
+            setTimeout(() => {
+              router.replace('/');
+            }, 100);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking user sign in status:', error);
+        setIsUserSignedIn(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Delay the check to ensure component is mounted
+    const timer = setTimeout(() => {
+      checkUserSignIn();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [segments]);
+
   useEffect(() => {
     if (error) throw error;
 
-    if (fontsLoaded) {
+    if (fontsLoaded && !isLoading) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, error]);
+  }, [fontsLoaded, error, isLoading]);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || isLoading) {
     return null;
   }
 
@@ -48,7 +93,7 @@ const _layout = () => {
   return (
     <ThemeContext.Provider value={darkMode ? theme.dark : theme.light}>
       <View style={styles.container}>
-        <DropdownMenu />
+        {isUserSignedIn && <DropdownMenu />}
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />

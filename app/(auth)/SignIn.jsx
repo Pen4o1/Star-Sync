@@ -24,7 +24,7 @@ const SignIn = () => {
       const pad = n => n < 10 ? '0' + n : n;
       const localDateString = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
       await AsyncStorage.setItem('userBirthDate', localDateString);
-      router.push("/Home");
+    router.push("/Home");
     } catch (e) {
       alert('Failed to save user data');
     }
@@ -68,7 +68,7 @@ const SignIn = () => {
               disabled={!name}
             >
               <Text style={styles.loginButtonText}>Continue</Text>
-            </TouchableOpacity>
+                </TouchableOpacity>
           </LinearGradient>
         </View>
       </ScrollView>
