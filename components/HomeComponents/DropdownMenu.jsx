@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Animated, Text, Dimensions } from '
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import userEvents from  '../../app/utils/userEvents';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -26,7 +27,18 @@ const DropdownMenu = () => {
     };
 
     fetchUserData();
-  }, []);
+
+  // Listen for manual refresh
+  const refreshHandler = () => {
+    fetchUserData();
+  };
+
+  userEvents.on('refreshUser', refreshHandler);
+
+  return () => {
+    userEvents.off('refreshUser', refreshHandler); // Clean up
+  };
+}, []);
 
   const openMenu = () => {
     setIsOpen(true);

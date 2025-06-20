@@ -11,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { FontAwesome6 } from '@expo/vector-icons';
 import UserDatePicker from '../../components/UserDatePicker';
+import userEvents from "../utils/userEvents";
 
 const EditUser = () => {
   const [name, setName] = useState("");
@@ -33,6 +34,7 @@ const EditUser = () => {
       const pad = n => n < 10 ? '0' + n : n;
       const localDateString = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
       await AsyncStorage.setItem("userBirthDate", localDateString);
+      userEvents.emit('refreshUser');
       router.push("/Home");
     } catch (e) {
       alert("Failed to save user data");
