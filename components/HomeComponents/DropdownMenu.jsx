@@ -99,7 +99,7 @@ const DropdownMenu = () => {
           {userBirthdate ? (
             <View style={styles.userHeader}>
               <Text style={styles.userBirthdate}>Birth date: {userBirthdate}</Text>
-              <Text style={styles.linkText} onPress={() => router.push('/edit')}>
+              <Text style={styles.linkText} onPress={() => router.push('/EditUser')}>
                 Edit
               </Text>
             </View>

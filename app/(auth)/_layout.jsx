@@ -11,6 +11,7 @@ const AuthLayout = () => {
         <Stack.Screen name="SignIn" options={{ headerShown: false }} />
         <Stack.Screen name="SignUp" options={{ headerShown: false }} />
         <Stack.Screen name="DetailPage" options={{ headerShown: false }} />
+        <Stack.Screen name="EditUser" options={{ headerShown: false }} />
         <Stack.Screen name="ZodiacComponent" options={{ headerShown: false }} />
         <Stack.Screen name="Notification" options={{ headerShown: false }} />
       </Stack>
