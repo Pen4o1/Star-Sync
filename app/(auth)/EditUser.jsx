@@ -10,7 +10,6 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { FontAwesome6 } from "@expo/vector-icons";
 import UserDatePicker from "../../components/UserDatePicker";
 import userEvents from "../utils/userEvents";
 
@@ -39,10 +38,6 @@ const EditUser = () => {
     } catch (e) {
       alert("Failed to save user data");
     }
-  };
-
-  const handleBack = () => {
-    router.back();
   };
 
   return (

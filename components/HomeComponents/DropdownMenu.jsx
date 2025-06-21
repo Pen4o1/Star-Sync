@@ -58,7 +58,7 @@ const DropdownMenu = () => {
   };
 
   const menuItems = [
-    { name: 'My Account Settings', route: '/account' },
+    { name: 'My Account Settings', route: '/EditUser' },
     { name: 'Daily Horoscope', route: '/daily' },
     { name: 'Chinese Horoscope', route: '/chinese' },
     { name: 'Love & Friendship Matcher', route: '/matches' },
