@@ -41,8 +41,8 @@ export interface ChineseHoroscopeResponse {
 }
 
 export interface MatchResponse {
-  compatibility: number;
-  description: string;
+  title: string;
+  text: string;
 }
 
 export const getDailyHoroscope = async (zodiacId: number, date: string): Promise<HoroscopeResponse> => {

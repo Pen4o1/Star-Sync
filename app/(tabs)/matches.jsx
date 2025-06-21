@@ -9,6 +9,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { ZODIAC_SIGNS } from '../../constants/zodiacData'
 import { getLoveMatch, getFriendMatch } from '../../services/horoscopeApi'
+import MatchResultModal from '../../components/MatchResultModal'
 
 export default function MatchScreen() {
   const [selectedSign1, setSelectedSign1] = useState(1)
@@ -16,19 +17,22 @@ export default function MatchScreen() {
   const [matchType, setMatchType] = useState('love')
   const [matchResult, setMatchResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
 
   const fetchMatch = async () => {
     try {
       setLoading(true)
+      
       const sign1 = ZODIAC_SIGNS[selectedSign1 - 1].name.toLowerCase()
       const sign2 = ZODIAC_SIGNS[selectedSign2 - 1].name.toLowerCase()
-
+      
       const data =
         matchType === 'love'
           ? await getLoveMatch(sign1, sign2)
           : await getFriendMatch(sign1, sign2)
 
       setMatchResult(data)
+      setModalVisible(true)
     } catch (error) {
       console.error('Error fetching match:', error)
     } finally {
@@ -106,24 +110,14 @@ export default function MatchScreen() {
               {loading ? 'Loading...' : 'Get Match'}
             </Text>
           </TouchableOpacity>
-
-          {matchResult && (
-            <View style={styles.resultContainer}>
-              <View style={styles.compatibilityContainer}>
-                <Text style={styles.compatibilityText}>
-                  Compatibility Score
-                </Text>
-                <Text style={styles.compatibilityScore}>
-                  {matchResult.compatibility}%
-                </Text>
-              </View>
-              <Text style={styles.matchDescription}>
-                {matchResult.description}
-              </Text>
-            </View>
-          )}
         </ScrollView>
       </LinearGradient>
+
+      <MatchResultModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        matchResult={matchResult}
+      />
     </View>
   )
 }
@@ -209,19 +203,12 @@ const styles = StyleSheet.create({
     margin: 10,
     borderRadius: 10,
   },
-  compatibilityContainer: {
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  compatibilityText: {
+  matchTitle: {
     color: '#fff',
-    fontSize: 16,
-  },
-  compatibilityScore: {
-    color: '#FFAA1E',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 5,
+    marginBottom: 10,
+    textAlign: 'center',
   },
   matchDescription: {
     color: '#fff',
