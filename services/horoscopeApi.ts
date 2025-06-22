@@ -45,6 +45,19 @@ export interface MatchResponse {
   text: string;
 }
 
+export interface DreamBookSearchResponse {
+  results: Array<{
+    id: string;
+    word: string;
+  }>;
+}
+
+export interface DreamBookWordResponse {
+  word: string;
+  back_letter: string;
+  description: string;
+}
+
 export const getDailyHoroscope = async (zodiacId: number, date: string): Promise<HoroscopeResponse> => {
   try {
     const response = await api.get(`/daily/${zodiacId}/${date}/`);
@@ -145,7 +158,7 @@ export const getFriendMatch = async (sign1: string, sign2: string): Promise<Matc
   }
 };
 
-export const searchDreamBook = async (word: string) => {
+export const searchDreamBook = async (word: string): Promise<DreamBookSearchResponse> => {
   try {
     const response = await api.get(`/dreambook/search/?s=${word}`);
     return response.data;
@@ -155,7 +168,7 @@ export const searchDreamBook = async (word: string) => {
   }
 };
 
-export const getDreamBookWord = async (wordId: number) => {
+export const getDreamBookWord = async (wordId: number): Promise<DreamBookWordResponse> => {
   try {
     const response = await api.get(`/dreambook/get_word/?word_id=${wordId}`);
     return response.data;

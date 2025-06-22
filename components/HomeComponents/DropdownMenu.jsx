@@ -36,7 +36,7 @@ const DropdownMenu = () => {
     userEvents.on('refreshUser', refreshHandler);
 
     return () => {
-      userEvents.off('refreshUser', refreshHandler); // Clean up
+      userEvents.off('refreshUser', refreshHandler); 
     };
   }, []);
 
@@ -62,7 +62,7 @@ const DropdownMenu = () => {
     { name: 'Daily Horoscope', route: '/daily' },
     { name: 'Chinese Horoscope', route: '/chinese' },
     { name: 'Love & Friendship Matcher', route: '/matches' },
-    { name: 'Dreambook', route: '/monthly' },
+    { name: 'Dreambook', route: '/dreambook' },
   ];
 
   const translateX = animation.interpolate({

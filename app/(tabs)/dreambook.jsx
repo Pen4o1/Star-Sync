@@ -10,23 +10,23 @@ import {
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { searchDreamBook, getDreamBookWord } from '../../services/horoscopeApi'
+import DreamInterpretationModal from '../../components/DreamInterpretationModal'
 
 export default function DreamBookScreen() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [selectedWord, setSelectedWord] = useState(null)
-  const [interpretation, setInterpretation] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
 
     try {
       setLoading(true)
-      const results = await searchDreamBook(searchQuery)
-      setSearchResults(results)
+      const response = await searchDreamBook(searchQuery)
+      setSearchResults(response.results || [])
       setSelectedWord(null)
-      setInterpretation(null)
     } catch (error) {
       console.error('Error searching dream book:', error)
     } finally {
@@ -37,9 +37,9 @@ export default function DreamBookScreen() {
   const handleWordSelect = async (word) => {
     try {
       setLoading(true)
-      setSelectedWord(word)
-      const result = await getDreamBookWord(word.id)
-      setInterpretation(result.interpretation)
+      const result = await getDreamBookWord(parseInt(word.id))
+      setSelectedWord(result)
+      setModalVisible(true)
     } catch (error) {
       console.error('Error fetching word interpretation:', error)
     } finally {
@@ -91,13 +91,12 @@ export default function DreamBookScreen() {
           </View>
         )}
 
-        {interpretation && (
-          <View style={styles.interpretationContainer}>
-            <Text style={styles.interpretationTitle}>
-              {selectedWord?.word} Interpretation
-            </Text>
-            <Text style={styles.interpretationText}>{interpretation}</Text>
-          </View>
+        {selectedWord && (
+          <DreamInterpretationModal
+            visible={modalVisible}
+            dreamWord={selectedWord}
+            onClose={() => setModalVisible(false)}
+          />
         )}
       </LinearGradient>
     </View>
@@ -157,22 +156,5 @@ const styles = StyleSheet.create({
   resultText: {
     color: '#fff',
     fontSize: 16,
-  },
-  interpretationContainer: {
-    padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    margin: 10,
-    borderRadius: 10,
-  },
-  interpretationTitle: {
-    color: '#FFAA1E',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  interpretationText: {
-    color: '#fff',
-    fontSize: 16,
-    lineHeight: 24,
   },
 })
