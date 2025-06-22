@@ -162,9 +162,9 @@ export const getFriendMatch = async (sign1: string, sign2: string): Promise<Matc
   }
 };
 
-export const searchDreamBook = async (word: string, page: number = 1, limit: number = 20): Promise<DreamBookSearchResponse> => {
+export const searchDreamBook = async (word: string): Promise<DreamBookSearchResponse> => {
   try {
-    const response = await api.get(`/dreambook/search/?s=${word}&page=${page}&limit=${limit}`);
+    const response = await api.get(`/dreambook/search/?s=${word}`);
     return response.data;
   } catch (error) {
     console.error('Error in searchDreamBook:', error);

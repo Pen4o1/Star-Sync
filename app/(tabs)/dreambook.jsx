@@ -34,7 +34,7 @@ export default function DreamBookScreen() {
       setCurrentPage(1)
       
       // Fetch all results since API doesn't support pagination
-      const response = await searchDreamBook(searchQuery, 1, 1000) // Request large limit to get all results
+      const response = await searchDreamBook(searchQuery)
       const allResults = response.results || []
       
       setAllSearchResults(allResults)
