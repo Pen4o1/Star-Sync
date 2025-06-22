@@ -12,6 +12,7 @@ import { ZODIAC_SIGNS } from '../../constants/zodiacData'
 import {
   getDailyHoroscope,
   getWeeklyHoroscope,
+  getMonthlyHoroscope,
   getYearlyHoroscope,
 } from '../../services/horoscopeApi'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -54,6 +55,8 @@ export default function DailyHoroscopeScreen() {
         data = await getDailyHoroscope(zodiacId, today)
       } else if (selectedPeriod === 'weekly') {
         data = await getWeeklyHoroscope(zodiacId)
+      } else if (selectedPeriod === 'monthly') {
+        data = await getMonthlyHoroscope(zodiacId)
       } else if (selectedPeriod === 'yearly') {
         data = await getYearlyHoroscope(zodiacId)
       }
@@ -73,7 +76,7 @@ export default function DailyHoroscopeScreen() {
   const userSign = ZODIAC_SIGNS.find((sign) => sign.id === zodiacId)
 
   const renderPeriodSelector = () => {
-    const periods = ['daily', 'weekly', 'yearly']
+    const periods = ['daily', 'weekly', 'monthly', 'yearly']
 
     return (
       <View style={styles.periodSelector}>
