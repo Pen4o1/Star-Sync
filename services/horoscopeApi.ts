@@ -50,6 +50,10 @@ export interface DreamBookSearchResponse {
     id: string;
     word: string;
   }>;
+  total?: number;
+  total_pages?: number;
+  current_page?: number;
+  per_page?: number;
 }
 
 export interface DreamBookWordResponse {
@@ -158,9 +162,9 @@ export const getFriendMatch = async (sign1: string, sign2: string): Promise<Matc
   }
 };
 
-export const searchDreamBook = async (word: string): Promise<DreamBookSearchResponse> => {
+export const searchDreamBook = async (word: string, page: number = 1, limit: number = 20): Promise<DreamBookSearchResponse> => {
   try {
-    const response = await api.get(`/dreambook/search/?s=${word}`);
+    const response = await api.get(`/dreambook/search/?s=${word}&page=${page}&limit=${limit}`);
     return response.data;
   } catch (error) {
     console.error('Error in searchDreamBook:', error);
