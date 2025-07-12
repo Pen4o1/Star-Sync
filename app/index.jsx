@@ -40,6 +40,7 @@ const Index = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const transitionValue = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
+  const [showPaywall, setShowPaywall] = useState(true); // Add state for paywall
   const handleNext = () => {
     if (currentIndex === onboardingData.length - 1) {
       router.push("/(auth)/SignIn");
@@ -118,7 +119,6 @@ const Index = () => {
           />
         </TouchableOpacity>
       </View>
-
       {/* StatusBar */}
       <StatusBar style="light" />
     </View>

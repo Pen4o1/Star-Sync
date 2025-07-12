@@ -8,6 +8,7 @@ import theme from "../theme/Theme";
 import { EventRegister } from "react-native-event-listeners";
 import DropdownMenu from "../components/HomeComponents/DropdownMenu";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SubscriptionPaywall from '../components/SubscriptionPaywall';
 
 const _layout = () => {
   const [fontsLoaded, error] = useFonts({
@@ -23,6 +24,7 @@ const _layout = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [isUserSignedIn, setIsUserSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPaywall, setShowPaywall] = useState(false);
   const router = useRouter();
   const segments = useSegments();
 
@@ -40,8 +42,10 @@ const _layout = () => {
       try {
         const userName = await AsyncStorage.getItem('userName');
         const userBirthDate = await AsyncStorage.getItem('userBirthDate');
-        
-        if (userName && userBirthDate) {
+        if (
+          userName && userName.trim() !== '' &&
+          userBirthDate && userBirthDate.trim() !== ''
+        ) {
           setIsUserSignedIn(true);
           // If user is signed in and on index or auth pages (except EditUser), redirect to Home
           if ((segments[0] === '(auth)' && segments[1] !== 'EditUser') || segments.length === 0) {
@@ -51,6 +55,7 @@ const _layout = () => {
           }
         } else {
           setIsUserSignedIn(false);
+          setShowPaywall(false); // Defensive: hide paywall if not signed in
           // If user is not signed in and not on index or auth pages, redirect to index
           if (segments[0] !== '(auth)' && segments.length > 0) {
             setTimeout(() => {
@@ -65,18 +70,24 @@ const _layout = () => {
         setIsLoading(false);
       }
     };
-
     // Delay the check to ensure component is mounted
     const timer = setTimeout(() => {
       checkUserSignIn();
     }, 100);
-
     return () => clearTimeout(timer);
   }, [segments]);
 
+  // Show paywall after user is signed in and layout is ready
+  useEffect(() => {
+    if (!isLoading && fontsLoaded && isUserSignedIn) {
+      setShowPaywall(true);
+    } else {
+      setShowPaywall(false);
+    }
+  }, [isLoading, fontsLoaded, isUserSignedIn]);
+
   useEffect(() => {
     if (error) throw error;
-
     if (fontsLoaded && !isLoading) {
       SplashScreen.hideAsync();
     }
@@ -99,6 +110,15 @@ const _layout = () => {
           <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />
           <Stack.Screen name="(auth)" />
         </Stack>
+        {/* Show paywall as modal overlay after login */}
+        {isUserSignedIn && showPaywall && (
+          <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
+            <SubscriptionPaywall
+              onClose={() => setShowPaywall(false)}
+              onSubscribe={() => setShowPaywall(false)}
+            />
+          </View>
+        )}
         <StatusBar style="light" />
       </View>
     </ThemeContext.Provider>

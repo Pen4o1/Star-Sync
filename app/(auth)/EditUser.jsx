@@ -40,6 +40,16 @@ const EditUser = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear();
+      userEvents.emit("refreshUser");
+      router.replace("/(auth)/SignIn");
+    } catch (e) {
+      alert("Failed to logout");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient colors={["#1a1a1a", "#2a2a2a"]} style={styles.gradient}>
@@ -68,6 +78,13 @@ const EditUser = () => {
             disabled={!name}
           >
             <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
         </ScrollView>
       </LinearGradient>
@@ -125,6 +142,18 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.5,
+  },
+  logoutButton: {
+    backgroundColor: "#ff4444",
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  logoutButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 
