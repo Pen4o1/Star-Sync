@@ -104,7 +104,7 @@ const _layout = () => {
   return (
     <ThemeContext.Provider value={darkMode ? theme.dark : theme.light}>
       <View style={styles.container}>
-        {isUserSignedIn && <DropdownMenu />}
+        {isUserSignedIn && !showPaywall && <DropdownMenu />}
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />

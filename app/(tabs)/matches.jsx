@@ -1,36 +1,49 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  FlatList,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ZODIAC_SIGNS } from '../../constants/zodiacData'
 import { getLoveMatch, getFriendMatch } from '../../services/horoscopeApi'
 import MatchResultModal from '../../components/MatchResultModal'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getUserZodiacSign } from '../../constants/userData'
 
 export default function MatchScreen() {
-  const [selectedSign1, setSelectedSign1] = useState(1)
-  const [selectedSign2, setSelectedSign2] = useState(2)
+  const [selectedSign1, setSelectedSign1] = useState(null)
+  const [selectedSign2, setSelectedSign2] = useState(null)
   const [matchType, setMatchType] = useState('love')
   const [matchResult, setMatchResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
+  const [pickerFor, setPickerFor] = useState(null) // 'sign1' or 'sign2'
+
+  useEffect(() => {
+    const fetchUserZodiac = async () => {
+      const birthdate = await AsyncStorage.getItem('userBirthDate');
+      if (birthdate) {
+        const zodiacId = getUserZodiacSign(birthdate);
+        setSelectedSign1(zodiacId);
+      }
+    };
+    fetchUserZodiac();
+  }, []);
 
   const fetchMatch = async () => {
     try {
       setLoading(true)
-      
       const sign1 = ZODIAC_SIGNS[selectedSign1 - 1].name.toLowerCase()
       const sign2 = ZODIAC_SIGNS[selectedSign2 - 1].name.toLowerCase()
-      
       const data =
         matchType === 'love'
           ? await getLoveMatch(sign1, sign2)
           : await getFriendMatch(sign1, sign2)
-
       setMatchResult(data)
       setModalVisible(true)
     } catch (error) {
@@ -40,10 +53,66 @@ export default function MatchScreen() {
     }
   }
 
+  const openPicker = (which) => {
+    setPickerFor(which)
+  }
+
+  const closePicker = () => {
+    setPickerFor(null)
+  }
+
+  const handleSignPick = (id) => {
+    if (pickerFor === 'sign1') {
+      setSelectedSign1(id)
+    } else if (pickerFor === 'sign2') {
+      setSelectedSign2(id)
+    }
+    closePicker()
+  }
+
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
         <ScrollView style={styles.scrollView}>
+          <View style={styles.circlesRow}>
+            {/* User's star sign */}
+            <TouchableOpacity
+              style={styles.circle}
+              onPress={() => openPicker('sign1')}
+            >
+              {selectedSign1 ? (
+                <>
+                  <Text style={styles.circleSymbol}>
+                    {ZODIAC_SIGNS[selectedSign1 - 1].symbol}
+                  </Text>
+                  <Text style={styles.circleName}>
+                    {ZODIAC_SIGNS[selectedSign1 - 1].name}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.emptyCircleText}>?</Text>
+              )}
+            </TouchableOpacity>
+            {/* Second sign (empty or selected) */}
+            <TouchableOpacity
+              style={styles.circle}
+              onPress={() => openPicker('sign2')}
+            >
+              {selectedSign2 ? (
+                <>
+                  <Text style={styles.circleSymbol}>
+                    {ZODIAC_SIGNS[selectedSign2 - 1].symbol}
+                  </Text>
+                  <Text style={styles.circleName}>
+                    {ZODIAC_SIGNS[selectedSign2 - 1].name}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.emptyCircleText}>?</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.matchTypeContainer}>
             <TouchableOpacity
               style={[
@@ -65,46 +134,10 @@ export default function MatchScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.signsContainer}>
-            <View style={styles.signColumn}>
-              <Text style={styles.signColumnTitle}>First Sign</Text>
-              {ZODIAC_SIGNS.map((sign) => (
-                <TouchableOpacity
-                  key={sign.id}
-                  style={[
-                    styles.signButton,
-                    selectedSign1 === sign.id && styles.selectedSign,
-                  ]}
-                  onPress={() => setSelectedSign1(sign.id)}
-                >
-                  <Text style={styles.signSymbol}>{sign.symbol}</Text>
-                  <Text style={styles.signName}>{sign.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={styles.signColumn}>
-              <Text style={styles.signColumnTitle}>Second Sign</Text>
-              {ZODIAC_SIGNS.map((sign) => (
-                <TouchableOpacity
-                  key={sign.id}
-                  style={[
-                    styles.signButton,
-                    selectedSign2 === sign.id && styles.selectedSign,
-                  ]}
-                  onPress={() => setSelectedSign2(sign.id)}
-                >
-                  <Text style={styles.signSymbol}>{sign.symbol}</Text>
-                  <Text style={styles.signName}>{sign.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
           <TouchableOpacity
             style={styles.matchButton}
             onPress={fetchMatch}
-            disabled={loading}
+            disabled={loading || !selectedSign2 || !selectedSign1}
           >
             <Text style={styles.matchButtonText}>
               {loading ? 'Loading...' : 'Get Match'}
@@ -112,6 +145,37 @@ export default function MatchScreen() {
           </TouchableOpacity>
         </ScrollView>
       </LinearGradient>
+
+      {/* Zodiac Picker Modal */}
+      <Modal
+        visible={!!pickerFor}
+        transparent
+        animationType="fade"
+        onRequestClose={closePicker}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select a Zodiac Sign</Text>
+            <FlatList
+              data={ZODIAC_SIGNS}
+              numColumns={3}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalSignButton}
+                  onPress={() => handleSignPick(item.id)}
+                >
+                  <Text style={styles.modalSignSymbol}>{item.symbol}</Text>
+                  <Text style={styles.modalSignName}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity onPress={closePicker} style={styles.modalCloseButton}>
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <MatchResultModal
         visible={modalVisible}
@@ -132,6 +196,39 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  circlesRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 20,
+    gap: 30,
+  },
+  circle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+  },
+  circleSymbol: {
+    fontSize: 32,
+    color: '#FFAA1E',
+    fontWeight: 'bold',
+  },
+  circleName: {
+    color: '#fff',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  emptyCircleText: {
+    fontSize: 32,
+    color: '#fff',
+    opacity: 0.5,
+    fontWeight: 'bold',
+  },
   matchTypeContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -151,40 +248,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  signsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 10,
-  },
-  signColumn: {
-    alignItems: 'center',
-  },
-  signColumnTitle: {
-    color: '#fff',
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  signButton: {
-    width: 60,
-    height: 60,
-    margin: 5,
-    borderRadius: 30,
-    backgroundColor: '#333',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selectedSign: {
-    backgroundColor: '#FFAA1E',
-  },
-  signSymbol: {
-    fontSize: 20,
-    color: '#fff',
-  },
-  signName: {
-    color: '#fff',
-    fontSize: 10,
-    marginTop: 2,
-  },
   matchButton: {
     backgroundColor: '#FFAA1E',
     padding: 15,
@@ -197,22 +260,53 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  resultContainer: {
-    padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    margin: 10,
-    borderRadius: 10,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  matchTitle: {
+  modalContent: {
+    backgroundColor: '#222',
+    borderRadius: 16,
+    padding: 24,
+    width: 320,
+    maxHeight: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
+    marginBottom: 16,
   },
-  matchDescription: {
+  modalSignButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 8,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#333',
+  },
+  modalSignSymbol: {
+    fontSize: 28,
+    color: '#FFAA1E',
+    fontWeight: 'bold',
+  },
+  modalSignName: {
     color: '#fff',
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  modalCloseButton: {
+    marginTop: 16,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#444',
+  },
+  modalCloseText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 })
