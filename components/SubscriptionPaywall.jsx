@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
+import { initIAP, getSubscriptions, buySubscription, setupPurchaseListeners } from '../services/iapService';
 
 const plans = [
   {
@@ -10,6 +11,7 @@ const plans = [
     subtitle: 'billed monthly',
     trial: '3 DAYS TRIAL',
     popular: false,
+    productId: 'subscriptions:monthly-plan',
   },
   {
     title: '1 Year',
@@ -17,6 +19,7 @@ const plans = [
     subtitle: 'billed yearly',
     trial: '7 DAYS TRIAL',
     popular: true,
+    productId: 'subscriptions:yearly-plan-trial',
   },
   {
     title: '1 Year',
@@ -24,6 +27,7 @@ const plans = [
     subtitle: 'billed yearly',
     trial: 'NO TRIAL',
     popular: false,
+    productId: 'subscriptions:yearly-plan-discount',
   },
 ];
 
@@ -67,6 +71,56 @@ const faqs = [
 export default function SubscriptionPaywall({ onClose, onSubscribe }) {
   const [selectedPlan, setSelectedPlan] = useState(1);
   const [openFaq, setOpenFaq] = useState(null);
+  const [iapProducts, setIapProducts] = useState([]);
+  const [iapReady, setIapReady] = useState(false);
+
+  useEffect(() => {
+    let removeListeners;
+    (async () => {
+      await initIAP();
+      setIapReady(true);
+      const subs = await getSubscriptions();
+      setIapProducts(subs || []);
+      removeListeners = setupPurchaseListeners(
+        (purchase) => {
+          // Notify parent with the successful purchase
+          onSubscribe?.(purchase);
+        },
+        (error) => {
+          console.warn('IAP purchase error:', error);
+        }
+      );
+    })();
+
+    return () => {
+      removeListeners && removeListeners();
+    };
+  }, [onSubscribe]);
+
+  const getPriceForPlan = (plan) => {
+    const [productIdOnly, basePlanKey] = plan.productId.split(':');
+    const match = iapProducts.find((p) => p.productId === productIdOnly);
+    const offerDetails = match?.subscriptionOfferDetails || [];
+    const offer = offerDetails.find((o) => o.basePlanId === basePlanKey) || offerDetails[0];
+    const firstPhase = offer?.pricingPhases?.pricingPhaseList?.[0];
+    const localizedPrice = firstPhase?.formattedPrice;
+    return localizedPrice || match?.localizedPrice || match?.price || plan.price;
+  };
+
+  const handleSubscribe = async () => {
+    const plan = plans[selectedPlan];
+    if (!iapReady) return;
+    const [productIdOnly, basePlanKey] = plan.productId.split(':');
+    const product = iapProducts.find((p) => p.productId === productIdOnly);
+    const offerDetails = product?.subscriptionOfferDetails || [];
+    const offer = offerDetails.find((o) => o.basePlanId === basePlanKey) || offerDetails[0];
+    const offerToken = offer?.offerToken;
+    if (!offerToken) {
+      Alert.alert('Store unavailable', 'No subscription offers found. Please try again later.');
+      return;
+    }
+    await buySubscription(productIdOnly, offerToken);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.light.background }}>
@@ -109,7 +163,7 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
                 <Text style={{ fontSize: 12, color: Colors.light.priceText, fontWeight: 'bold', marginBottom: 4, textAlign: 'center' }}>MOST POPULAR</Text>
               )}
               <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 4, color: Colors.light.text }}>{plan.title}</Text>
-              <Text style={{ fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 4, color: Colors.light.priceText }}>{plan.price}</Text>
+              <Text style={{ fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 4, color: Colors.light.priceText }}>{getPriceForPlan(plan)}</Text>
               <Text style={{ fontSize: 12, textAlign: 'center', color: Colors.light.text, opacity: 0.6, marginBottom: 8 }}>{plan.subtitle}</Text>
               <Text style={{ fontSize: 12, textAlign: 'center', color: Colors.light.priceText, fontWeight: '600' }}>{plan.trial}</Text>
             </TouchableOpacity>
@@ -161,10 +215,13 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
       {/* Main Action Button */}
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 24, paddingBottom: 24 }}>
         <TouchableOpacity
-          style={{ backgroundColor: Colors.light.buttonBg, borderRadius: 16, paddingVertical: 16 }}
-          onPress={() => onSubscribe && onSubscribe(plans[selectedPlan])}
+          style={{ backgroundColor: Colors.light.buttonBg, borderRadius: 16, paddingVertical: 16, opacity: iapReady ? 1 : 0.6 }}
+          disabled={!iapReady}
+          onPress={handleSubscribe}
         >
-          <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: Colors.light.buttonText }}>Start Free Trial</Text>
+          <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: Colors.light.buttonText }}>
+            {iapReady ? 'Start Free Trial' : 'Loading Store...'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
