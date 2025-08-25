@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "Star-Sync",
-    "slug": "Star-Sync",
+    "slug": "star-sync",
+    "owner": "pen4o1",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,14 +15,18 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sureshs123.StarSynczsh: command not found: expo"
+      "bundleIdentifier": "com.sureshs123.StarSync",
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sureshs123.StarSync"
+      "package": "com.sureshs123.StarSync",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "bundler": "metro",
@@ -39,9 +44,11 @@
         "origin": false
       },
       "eas": {
-        "projectId": "0e9fe0cc-e24e-4405-a09d-dfcb685dbdb3"
+        "projectId": "f3b65c19-f50c-4e86-8e41-aaa310b92b7b"
       }
     },
-    "owner": "pen4o1"
+    "updates": {
+      "url": "https://u.expo.dev/f3b65c19-f50c-4e86-8e41-aaa310b92b7b"
+    }
   }
 }
