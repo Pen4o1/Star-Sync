@@ -76,10 +76,15 @@ android {
             keyPassword keystoreProperties.getProperty('DEBUG_KEY_PASSWORD', System.getenv('DEBUG_KEY_PASSWORD') ?: 'android')
         }
         release {
-            storeFile file(keystoreProperties.getProperty('RELEASE_STORE_FILE', System.getenv('RELEASE_STORE_FILE') ?: 'appiato.keystore'))
-            storePassword keystoreProperties.getProperty('RELEASE_STORE_PASSWORD', System.getenv('RELEASE_STORE_PASSWORD') ?: '')
-            keyAlias keystoreProperties.getProperty('RELEASE_KEY_ALIAS', System.getenv('RELEASE_KEY_ALIAS') ?: '')
-            keyPassword keystoreProperties.getProperty('RELEASE_KEY_PASSWORD', System.getenv('RELEASE_KEY_PASSWORD') ?: '')
+            def releaseStoreFile = keystoreProperties.getProperty('RELEASE_STORE_FILE', System.getenv('RELEASE_STORE_FILE') ?: (findProperty('RELEASE_STORE_FILE') ?: 'appiato.keystore'))
+            def releaseStorePassword = keystoreProperties.getProperty('RELEASE_STORE_PASSWORD', System.getenv('RELEASE_STORE_PASSWORD') ?: (findProperty('RELEASE_STORE_PASSWORD') ?: ''))
+            def releaseKeyAlias = keystoreProperties.getProperty('RELEASE_KEY_ALIAS', System.getenv('RELEASE_KEY_ALIAS') ?: (findProperty('RELEASE_KEY_ALIAS') ?: ''))
+            def releaseKeyPassword = keystoreProperties.getProperty('RELEASE_KEY_PASSWORD', System.getenv('RELEASE_KEY_PASSWORD') ?: (findProperty('RELEASE_KEY_PASSWORD') ?: ''))
+
+            storeFile file(releaseStoreFile)
+            storePassword releaseStorePassword
+            keyAlias releaseKeyAlias
+            keyPassword releaseKeyPassword
         }
     }
 
