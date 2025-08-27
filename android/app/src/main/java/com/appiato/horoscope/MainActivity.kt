@@ -1,4 +1,4 @@
-package com.sureshs123.StarSync
+package com.appiato.horoscope
 
 import android.os.Build
 import android.os.Bundle

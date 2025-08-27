@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sureshs123.StarSync",
+      "bundleIdentifier": "com.appiato.horoscope",
       "runtimeVersion": {
         "policy": "appVersion"
       }
@@ -25,8 +25,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sureshs123.StarSync",
-      "runtimeVersion": "1.0.0"
+      "package": "com.appiato.horoscope",
+      "runtimeVersion": "1.0.9"
     },
     "web": {
       "bundler": "metro",

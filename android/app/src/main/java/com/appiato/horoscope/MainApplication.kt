@@ -1,4 +1,4 @@
-package com.sureshs123.StarSync
+package com.appiato.horoscope
 
 import android.app.Application
 import android.content.res.Configuration
