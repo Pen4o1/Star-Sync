@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://cms.buzlylabs.com/horoscope_api';
+const BASE_URL = 'https://cms.buzlylabs.com/horoscope_api';
 
 // Create axios instance with default config
 const api = axios.create({

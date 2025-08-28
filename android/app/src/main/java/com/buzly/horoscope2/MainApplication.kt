@@ -1,4 +1,4 @@
-package com.appiato.horoscope
+package com.buzly.horoscope2
 
 import android.app.Application
 import android.content.res.Configuration

@@ -52,14 +52,14 @@ android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
-    namespace 'com.appiato.horoscope'
+    namespace 'com.buzly.horoscope2'
 
     defaultConfig {
-        applicationId 'com.appiato.horoscope'
+        applicationId 'com.buzly.horoscope2'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 25
-        versionName "2.6"
+        versionCode 3
+        versionName "1.0.3"
     }
 
     flavorDimensions "store"
