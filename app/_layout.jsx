@@ -9,6 +9,7 @@ import { EventRegister } from "react-native-event-listeners";
 import DropdownMenu from "../components/HomeComponents/DropdownMenu";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SubscriptionPaywall from '../components/SubscriptionPaywall';
+import { initIAP, hasActiveSubscription } from '../services/iapService';
 
 const _layout = () => {
   const [fontsLoaded, error] = useFonts({
@@ -25,6 +26,7 @@ const _layout = () => {
   const [isUserSignedIn, setIsUserSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const router = useRouter();
   const segments = useSegments();
 
@@ -77,14 +79,34 @@ const _layout = () => {
     return () => clearTimeout(timer);
   }, [segments]);
 
-  // Show paywall after user is signed in and layout is ready
+  // to check if user is subscribed
+  useEffect(() => {
+    const runIapCheck = async () => {
+      if (isLoading || !fontsLoaded) return;
+      if (!isUserSignedIn) {
+        setIsSubscribed(false);
+        setShowPaywall(false);
+        return;
+      }
+      try {
+        await initIAP();
+        const active = await hasActiveSubscription();
+        setIsSubscribed(!!active);
+      } catch (e) {
+        setIsSubscribed(false);
+      }
+    };
+    runIapCheck();
+  }, [isUserSignedIn, isLoading, fontsLoaded]);
+
+  // shwos popup if user is signed in and not subscribed
   useEffect(() => {
     if (!isLoading && fontsLoaded && isUserSignedIn) {
-      setShowPaywall(true);
+      setShowPaywall(!isSubscribed);
     } else {
       setShowPaywall(false);
     }
-  }, [isLoading, fontsLoaded, isUserSignedIn]);
+  }, [isLoading, fontsLoaded, isUserSignedIn, isSubscribed]);
 
   useEffect(() => {
     if (error) throw error;

@@ -3,9 +3,8 @@ import type { Subscription, ProductPurchase, PurchaseError, SubscriptionPurchase
 
 const subscriptionProductId = 'subscriptions';
 
-/**
- * Initialize Google Play Billing connection
- */
+//Initialize Google Play Billing connection
+
 export async function initIAP(): Promise<void> {
   try {
     await RNIap.initConnection();
@@ -21,9 +20,8 @@ export async function initIAP(): Promise<void> {
   }
 }
 
-/**
- * Get available subscription offers
- */
+ //Get available subscription offers
+
 export async function getSubscriptions(): Promise<{
   productId: string;
   basePlanId: string;
@@ -66,9 +64,8 @@ export async function getSubscriptions(): Promise<{
   }
 }
 
-/**
- * Request a subscription purchase
- */
+  //Request a subscription purchase
+
 export async function buySubscription(
   productId: string,
   offerToken: string
@@ -89,9 +86,8 @@ export async function buySubscription(
 }
 
 
-/**
- * Restore all available purchases
- */
+  //Restore all available purchases
+
 export async function restoreSubscriptions(): Promise<ProductPurchase[]> {
   try {
     const purchases = await RNIap.getAvailablePurchases();
@@ -103,8 +99,40 @@ export async function restoreSubscriptions(): Promise<ProductPurchase[]> {
 }
 
 /**
- * Setup listeners for purchase updates and errors
+ * Check if user currently has an active subscription on this Play account.
+ * Works across reinstalls and logouts as long as the device is signed into the same Play account.
  */
+export async function hasActiveSubscription(expectedProductIds?: string[]): Promise<boolean> {
+  try {
+    const purchases = await RNIap.getAvailablePurchases();
+    if (!purchases || purchases.length === 0) return false;
+    return purchases.some((p) => {
+      const matchesProduct = !expectedProductIds || expectedProductIds.length === 0 || expectedProductIds.includes(p.productId);
+      return matchesProduct;
+    });
+  } catch (err) {
+    console.warn('hasActiveSubscription error:', err);
+    return false;
+  }
+}
+
+/**
+ Extract purchase tokens to send to your backend for server-side verification (prob later)
+export async function getSubscriptionTokens(): Promise<{ productId: string; purchaseToken: string }[]> {
+  try {
+    const purchases = await RNIap.getAvailablePurchases();
+    return (purchases || [])
+      .filter((p) => !!(p as any).purchaseToken)
+      .map((p) => ({ productId: p.productId, purchaseToken: (p as any).purchaseToken as string }));
+  } catch (err) {
+    console.warn('getSubscriptionTokens error:', err);
+    return [];
+  }
+}
+**/
+
+  //Setup listeners for purchase updates and errors
+
 export function setupPurchaseListeners(
   onSuccess?: (purchase: ProductPurchase) => void,
   onError?: (error: PurchaseError) => void
