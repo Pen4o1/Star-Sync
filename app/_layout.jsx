@@ -9,7 +9,10 @@ import { EventRegister } from "react-native-event-listeners";
 import DropdownMenu from "../components/HomeComponents/DropdownMenu";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SubscriptionPaywall from '../components/SubscriptionPaywall';
-import { initIAP, hasActiveSubscription } from '../services/iapService';
+import { initIAP } from '../services/iapService';
+import { getEntitlements } from '../services/horoscopeSubService';
+import { getUid } from '../services/uidService';
+import SubscriptionContext from '../context/SubscriptionContext';
 
 const _layout = () => {
   const [fontsLoaded, error] = useFonts({
@@ -49,7 +52,6 @@ const _layout = () => {
           userBirthDate && userBirthDate.trim() !== ''
         ) {
           setIsUserSignedIn(true);
-          // If user is signed in and on index or auth pages (except EditUser), redirect to Home
           if ((segments[0] === '(auth)' && segments[1] !== 'EditUser') || segments.length === 0) {
             setTimeout(() => {
               router.replace('/Home');
@@ -57,8 +59,7 @@ const _layout = () => {
           }
         } else {
           setIsUserSignedIn(false);
-          setShowPaywall(false); // Defensive: hide paywall if not signed in
-          // If user is not signed in and not on index or auth pages, redirect to index
+          setShowPaywall(false);
           if (segments[0] !== '(auth)' && segments.length > 0) {
             setTimeout(() => {
               router.replace('/');
@@ -72,14 +73,12 @@ const _layout = () => {
         setIsLoading(false);
       }
     };
-    // Delay the check to ensure component is mounted
     const timer = setTimeout(() => {
       checkUserSignIn();
     }, 100);
     return () => clearTimeout(timer);
   }, [segments]);
 
-  // to check if user is subscribed
   useEffect(() => {
     const runIapCheck = async () => {
       if (isLoading || !fontsLoaded) return;
@@ -90,8 +89,9 @@ const _layout = () => {
       }
       try {
         await initIAP();
-        const active = await hasActiveSubscription();
-        setIsSubscribed(!!active);
+        const uid = await getUid();
+        const ent = await getEntitlements(uid);
+        setIsSubscribed(!!ent?.is_paid);
       } catch (e) {
         setIsSubscribed(false);
       }
@@ -99,7 +99,6 @@ const _layout = () => {
     runIapCheck();
   }, [isUserSignedIn, isLoading, fontsLoaded]);
 
-  // shwos popup if user is signed in and not subscribed
   useEffect(() => {
     if (!isLoading && fontsLoaded && isUserSignedIn) {
       setShowPaywall(!isSubscribed);
@@ -115,6 +114,18 @@ const _layout = () => {
     }
   }, [fontsLoaded, error, isLoading]);
 
+  const handleSubscribe = async () => {
+    try {
+      const uid = await getUid();
+      setTimeout(async () => {
+        const ent = await getEntitlements(uid);
+        const paid = !!ent?.is_paid;
+        setIsSubscribed(paid);
+        if (paid) setShowPaywall(false);
+      }, 800);
+    } catch {}
+  };
+
   if (!fontsLoaded || isLoading) {
     return null;
   }
@@ -123,26 +134,29 @@ const _layout = () => {
     return null;
   }
 
+  const openPaywall = () => setShowPaywall(true);
+
   return (
     <ThemeContext.Provider value={darkMode ? theme.dark : theme.light}>
-      <View style={styles.container}>
-        {isUserSignedIn && !showPaywall && <DropdownMenu />}
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" />
-        </Stack>
-        {/* Show paywall as modal overlay after login */}
-        {isUserSignedIn && showPaywall && (
-          <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
-            <SubscriptionPaywall
-              onClose={() => setShowPaywall(false)}
-              onSubscribe={() => setShowPaywall(false)}
-            />
-          </View>
-        )}
-        <StatusBar style="light" />
-      </View>
+      <SubscriptionContext.Provider value={{ isSubscribed, openPaywall }}>
+        <View style={styles.container}>
+          {isUserSignedIn && !showPaywall && <DropdownMenu />}
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" />
+          </Stack>
+          {isUserSignedIn && showPaywall && (
+            <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
+              <SubscriptionPaywall
+                onClose={() => setShowPaywall(false)}
+                onSubscribe={handleSubscribe}
+              />
+            </View>
+          )}
+          <StatusBar style="light" />
+        </View>
+      </SubscriptionContext.Provider>
     </ThemeContext.Provider>
   );
 };

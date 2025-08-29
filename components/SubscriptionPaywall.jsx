@@ -73,7 +73,7 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
       Alert.alert('Store unavailable', 'No subscription offers found.');
       return;
     }
-    await buySubscription(offer.productId, offer.offerToken);
+    await buySubscription(offer.productId, offer.offerToken, offer.basePlanId);
   };
 
   return (

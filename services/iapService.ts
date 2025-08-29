@@ -1,10 +1,12 @@
 import * as RNIap from 'react-native-iap';
 import type { Subscription, ProductPurchase, PurchaseError, SubscriptionPurchase } from 'react-native-iap';
+import { verifySubscription } from './horoscopeSubService';
+import { getUid } from './uidService';
+import { Alert, Platform } from 'react-native';
 
 const subscriptionProductId = 'subscriptions';
 
-//Initialize Google Play Billing connection
-
+// Initialize Google Play Billing connection
 export async function initIAP(): Promise<void> {
   try {
     await RNIap.initConnection();
@@ -15,13 +17,13 @@ export async function initIAP(): Promise<void> {
         await RNIap.flushFailedPurchasesCachedAsPendingAndroid();
       } catch {}
     }
-  } catch (err) {
+  } catch (err: any) {
     console.warn('IAP init error:', err);
+    Alert.alert('Init Error', JSON.stringify(err, null, 2));
   }
 }
 
- //Get available subscription offers
-
+// Get available subscription offers
 export async function getSubscriptions(): Promise<{
   productId: string;
   basePlanId: string;
@@ -58,17 +60,17 @@ export async function getSubscriptions(): Promise<{
 
     console.log('Available subscription offers:', offers);
     return offers;
-  } catch (err) {
+  } catch (err: any) {
     console.warn('getSubscriptions error:', err);
+    Alert.alert('Subscriptions Error', JSON.stringify(err, null, 2));
     return [];
   }
 }
 
-  //Request a subscription purchase
-
+// Request a subscription purchase
 export async function buySubscription(
   productId: string,
-  offerToken: string
+  offerToken: string,
 ): Promise<SubscriptionPurchase | null> {
   try {
     const purchase = await RNIap.requestSubscription({
@@ -76,63 +78,72 @@ export async function buySubscription(
       subscriptionOffers: [{ sku: productId, offerToken }],
     });
 
-    // Ensure we always return either a SubscriptionPurchase or null
     if (!purchase) return null;
-    return Array.isArray(purchase) ? (purchase[0] as SubscriptionPurchase) : (purchase as SubscriptionPurchase);
-  } catch (err) {
+
+    const purchaseData = Array.isArray(purchase) ? purchase[0] : purchase;
+
+    // Send purchase to backend
+    try {
+      const uid = await getUid();
+      const response = await verifySubscription({
+        uid,
+        packageName: 'com.buzly.horoscope2',
+        productId: purchaseData.productId,
+        purchaseToken: purchaseData.purchaseToken as string,
+        orderId: purchaseData.transactionId ?? null,
+        autoRenewing: true,
+        status: 'active',
+      });
+
+      Alert.alert('Purchase Success 🎉', JSON.stringify(response, null, 2));
+    } catch (err: any) {
+      console.warn('Failed to verify subscription with backend:', err);
+      Alert.alert('Verification Error', JSON.stringify(err, null, 2));
+    }
+
+    return purchaseData as SubscriptionPurchase;
+  } catch (err: any) {
     console.warn('buySubscription error:', err);
+    Alert.alert('Purchase Error', JSON.stringify(err, null, 2));
     return null;
   }
 }
 
-
-  //Restore all available purchases
-
+// Restore all available purchases
 export async function restoreSubscriptions(): Promise<ProductPurchase[]> {
   try {
     const purchases = await RNIap.getAvailablePurchases();
+    Alert.alert('Restore Purchases', JSON.stringify(purchases, null, 2));
     return purchases ?? [];
-  } catch (err) {
+  } catch (err: any) {
     console.warn('restoreSubscriptions error:', err);
+    Alert.alert('Restore Error', JSON.stringify(err, null, 2));
     return [];
   }
 }
 
-/**
- * Check if user currently has an active subscription on this Play account.
- * Works across reinstalls and logouts as long as the device is signed into the same Play account.
- */
+// Check if user currently has an active subscription
 export async function hasActiveSubscription(expectedProductIds?: string[]): Promise<boolean> {
   try {
     const purchases = await RNIap.getAvailablePurchases();
-    if (!purchases || purchases.length === 0) return false;
-    return purchases.some((p) => {
-      const matchesProduct = !expectedProductIds || expectedProductIds.length === 0 || expectedProductIds.includes(p.productId);
+    const hasActive = purchases?.some((p) => {
+      const matchesProduct =
+        !expectedProductIds ||
+        expectedProductIds.length === 0 ||
+        expectedProductIds.includes(p.productId);
       return matchesProduct;
-    });
-  } catch (err) {
+    }) ?? false;
+
+    Alert.alert('Active Subscription Check', JSON.stringify({ hasActive, purchases }, null, 2));
+    return hasActive;
+  } catch (err: any) {
     console.warn('hasActiveSubscription error:', err);
+    Alert.alert('Check Error', JSON.stringify(err, null, 2));
     return false;
   }
 }
 
-/**
- Extract purchase tokens to send to your backend for server-side verification (prob later)
-export async function getSubscriptionTokens(): Promise<{ productId: string; purchaseToken: string }[]> {
-  try {
-    const purchases = await RNIap.getAvailablePurchases();
-    return (purchases || [])
-      .filter((p) => !!(p as any).purchaseToken)
-      .map((p) => ({ productId: p.productId, purchaseToken: (p as any).purchaseToken as string }));
-  } catch (err) {
-    console.warn('getSubscriptionTokens error:', err);
-    return [];
-  }
-}
-**/
-
-  //Setup listeners for purchase updates and errors
-
+// Setup listeners for purchase updates and errors
 export function setupPurchaseListeners(
   onSuccess?: (purchase: ProductPurchase) => void,
   onError?: (error: PurchaseError) => void
@@ -140,15 +151,41 @@ export function setupPurchaseListeners(
   const updateListener = RNIap.purchaseUpdatedListener(async (purchase: ProductPurchase) => {
     if (purchase.transactionReceipt) {
       try {
-        await RNIap.finishTransaction({ purchase, isConsumable: false });
+        // ✅ Fixed: pass object with 'purchase' and 'isConsumable'
+        await RNIap.finishTransaction({
+          purchase,
+          isConsumable: false, // subscriptions are not consumable
+        });
+
+        try {
+          const uid = await getUid();
+          const response = await verifySubscription({
+            uid,
+            packageName: 'com.buzly.horoscope2',
+            productId: purchase.productId,
+            purchaseToken: (purchase as any).purchaseToken,
+            orderId: purchase.transactionId ?? null,
+            autoRenewing: true,
+            status: 'active',
+          });
+
+          Alert.alert('Purchase Restored ✅', JSON.stringify(response, null, 2));
+        } catch (err: any) {
+          console.warn('Failed to verify restored purchase with backend:', err);
+          Alert.alert('Restore Verification Error', JSON.stringify(err, null, 2));
+        }
+
         onSuccess?.(purchase);
-      } catch (err) {
+      } catch (err: any) {
         console.warn('finishTransaction error:', err);
+        Alert.alert('Finish Transaction Error', JSON.stringify(err, null, 2));
       }
     }
   });
 
   const errorListener = RNIap.purchaseErrorListener((error: PurchaseError) => {
+    console.warn('Purchase error:', error);
+    Alert.alert('Purchase Failed', JSON.stringify(error, null, 2));
     onError?.(error);
   });
 
@@ -156,4 +193,37 @@ export function setupPurchaseListeners(
     updateListener.remove();
     errorListener.remove();
   };
+}
+
+// Restore purchases and send to backend for a UID
+export async function restorePurchasesForUid(uid?: string): Promise<ProductPurchase[]> {
+  try {
+    if (!uid) uid = await getUid();
+    const purchases = await RNIap.getAvailablePurchases();
+
+    for (const p of purchases) {
+      try {
+        const response = await verifySubscription({
+          uid,
+          packageName: 'com.buzly.horoscope2',
+          productId: p.productId,
+          purchaseToken: (p as any).purchaseToken,
+          orderId: p.transactionId ?? null,
+          autoRenewing: true,
+          status: 'active',
+        });
+
+        Alert.alert('Restored ✅', JSON.stringify(response, null, 2));
+      } catch (err: any) {
+        console.warn('Failed to verify restored purchase:', err);
+        Alert.alert('Restore Error', JSON.stringify(err, null, 2));
+      }
+    }
+
+    return purchases ?? [];
+  } catch (err: any) {
+    console.warn('restorePurchasesForUid error:', err);
+    Alert.alert('Restore Error', JSON.stringify(err, null, 2));
+    return [];
+  }
 }

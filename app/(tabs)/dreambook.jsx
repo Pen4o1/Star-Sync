@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -7,10 +7,14 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
+  ActivityIndicator,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { searchDreamBook, getDreamBookWord } from '../../services/horoscopeApi'
 import DreamInterpretationModal from '../../components/DreamInterpretationModal'
+import { getUid } from '../../services/uidService'
+import { getEntitlements } from '../../services/horoscopeSubService'
+import SubscriptionPaywall from '../../components/SubscriptionPaywall'
 
 export default function DreamBookScreen() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -23,9 +27,30 @@ export default function DreamBookScreen() {
   const [totalResults, setTotalResults] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const resultsPerPage = 10
+  const [isPaid, setIsPaid] = useState(false)
+  const [entitlementsLoading, setEntitlementsLoading] = useState(true)
+  const [showPaywall, setShowPaywall] = useState(false)
+
+  useEffect(() => {
+    const checkEntitlements = async () => {
+      try {
+        setEntitlementsLoading(true)
+        const uid = await getUid()
+        const ent = await getEntitlements(uid)
+        setIsPaid(!!ent?.is_paid)
+      } catch (e) {
+        setIsPaid(false)
+      } finally {
+        setEntitlementsLoading(false)
+      }
+    }
+    checkEntitlements()
+  }, [])
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
+
+    if (!isPaid) { setShowPaywall(true); return; }
 
     try {
       setLoading(true)
@@ -68,6 +93,7 @@ export default function DreamBookScreen() {
   }
 
   const handleWordSelect = async (word) => {
+    if (!isPaid) { setShowPaywall(true); return; }
     try {
       setLoading(true)
       const result = await getDreamBookWord(parseInt(word.id))
@@ -78,6 +104,35 @@ export default function DreamBookScreen() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (entitlementsLoading) {
+    return (
+      <View style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color="#FFAA1E" />
+        <Text style={{ color: '#fff', marginTop: 8 }}>Checking access...</Text>
+      </View>
+    )
+  }
+
+  if (!isPaid) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
+          <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>Dreambook is a premium feature.</Text>
+            <TouchableOpacity onPress={() => setShowPaywall(true)} style={{ backgroundColor: '#FFAA1E', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 }}>
+              <Text style={{ color: '#000', fontWeight: 'bold' }}>Upgrade</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </LinearGradient>
+        {showPaywall && (
+          <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
+            <SubscriptionPaywall onClose={() => setShowPaywall(false)} onSubscribe={() => { setShowPaywall(false); setIsPaid(true); }} />
+          </View>
+        )}
+      </View>
+    )
   }
 
   return (
@@ -199,6 +254,11 @@ export default function DreamBookScreen() {
           />
         )}
       </LinearGradient>
+      {showPaywall && (
+        <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
+          <SubscriptionPaywall onClose={() => setShowPaywall(false)} onSubscribe={() => { setShowPaywall(false); setIsPaid(true); }} />
+        </View>
+      )}
     </View>
   )
 }

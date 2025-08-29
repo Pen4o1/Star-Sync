@@ -16,6 +16,9 @@ import {
 } from '../../services/horoscopeApi'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getUserChineseZodiac } from '../../constants/userData'
+import { getUid } from '../../services/uidService'
+import { getEntitlements } from '../../services/horoscopeSubService'
+import SubscriptionPaywall from '../../components/SubscriptionPaywall'
 
 export default function ChineseHoroscopeScreen() {
   const [selectedAnimal, setSelectedAnimal] = useState(null)
@@ -23,6 +26,9 @@ export default function ChineseHoroscopeScreen() {
   const [loading, setLoading] = useState(true)
   const [birthdate, setBirthdate] = useState(null)
   const [selectedPeriod, setSelectedPeriod] = useState('daily')
+  const [isPaid, setIsPaid] = useState(false)
+  const [entitlementsLoading, setEntitlementsLoading] = useState(true)
+  const [showPaywall, setShowPaywall] = useState(false)
 
   useEffect(() => {
     const loadUserChinese = async () => {
@@ -41,11 +47,27 @@ export default function ChineseHoroscopeScreen() {
   }, [])
 
   useEffect(() => {
-    if (selectedAnimal) {
+    const checkEntitlements = async () => {
+      try {
+        setEntitlementsLoading(true)
+        const uid = await getUid()
+        const ent = await getEntitlements(uid)
+        setIsPaid(!!ent?.is_paid)
+      } catch (e) {
+        setIsPaid(false)
+      } finally {
+        setEntitlementsLoading(false)
+      }
+    }
+    checkEntitlements()
+  }, [])
+
+  useEffect(() => {
+    if (selectedAnimal && isPaid) {
       fetchHoroscope()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAnimal, selectedPeriod])
+  }, [selectedAnimal, selectedPeriod, isPaid])
 
   const fetchHoroscope = async () => {
     try {
@@ -97,6 +119,35 @@ export default function ChineseHoroscopeScreen() {
             </Text>
           </TouchableOpacity>
         ))}
+      </View>
+    )
+  }
+
+  if (entitlementsLoading) {
+    return (
+      <View style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color="#FFAA1E" />
+        <Text style={{ color: '#fff', marginTop: 8 }}>Checking access...</Text>
+      </View>
+    )
+  }
+
+  if (!isPaid) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>Chinese Horoscope is a premium feature.</Text>
+            <TouchableOpacity onPress={() => setShowPaywall(true)} style={{ backgroundColor: '#FFAA1E', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 }}>
+              <Text style={{ color: '#000', fontWeight: 'bold' }}>Upgrade</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+        {showPaywall && (
+          <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
+            <SubscriptionPaywall onClose={() => setShowPaywall(false)} onSubscribe={() => { setShowPaywall(false); setIsPaid(true); }} />
+          </View>
+        )}
       </View>
     )
   }

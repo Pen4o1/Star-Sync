@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
+  ActivityIndicator,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ZODIAC_SIGNS } from '../../constants/zodiacData'
@@ -14,6 +15,9 @@ import { getLoveMatch, getFriendMatch } from '../../services/horoscopeApi'
 import MatchResultModal from '../../components/MatchResultModal'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getUserZodiacSign } from '../../constants/userData'
+import { getUid } from '../../services/uidService'
+import { getEntitlements } from '../../services/horoscopeSubService'
+import SubscriptionPaywall from '../../components/SubscriptionPaywall'
 
 export default function MatchScreen() {
   const [selectedSign1, setSelectedSign1] = useState(null)
@@ -23,6 +27,9 @@ export default function MatchScreen() {
   const [loading, setLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [pickerFor, setPickerFor] = useState(null) // 'sign1' or 'sign2'
+  const [isPaid, setIsPaid] = useState(false)
+  const [entitlementsLoading, setEntitlementsLoading] = useState(true)
+  const [showPaywall, setShowPaywall] = useState(false)
 
   useEffect(() => {
     const fetchUserZodiac = async () => {
@@ -35,7 +42,24 @@ export default function MatchScreen() {
     fetchUserZodiac();
   }, []);
 
+  useEffect(() => {
+    const checkEntitlements = async () => {
+      try {
+        setEntitlementsLoading(true)
+        const uid = await getUid()
+        const ent = await getEntitlements(uid)
+        setIsPaid(!!ent?.is_paid)
+      } catch {
+        setIsPaid(false)
+      } finally {
+        setEntitlementsLoading(false)
+      }
+    }
+    checkEntitlements()
+  }, [])
+
   const fetchMatch = async () => {
+    if (!isPaid) { setShowPaywall(true); return; }
     try {
       setLoading(true)
       const sign1 = ZODIAC_SIGNS[selectedSign1 - 1].name.toLowerCase()
@@ -68,6 +92,37 @@ export default function MatchScreen() {
       setSelectedSign2(id)
     }
     closePicker()
+  }
+
+  if (entitlementsLoading) {
+    return (
+      <View style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color="#FFAA1E" />
+        <Text style={{ color: '#fff', marginTop: 8 }}>Checking access...</Text>
+      </View>
+    )
+  }
+
+  if (!isPaid) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
+          <ScrollView style={styles.scrollView}>
+            <View style={{ padding: 24, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>Love & Friendship Matcher is a premium feature.</Text>
+              <TouchableOpacity onPress={() => setShowPaywall(true)} style={{ backgroundColor: '#FFAA1E', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 }}>
+                <Text style={{ color: '#000', fontWeight: 'bold' }}>Upgrade</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </LinearGradient>
+        {showPaywall && (
+          <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
+            <SubscriptionPaywall onClose={() => setShowPaywall(false)} onSubscribe={() => { setShowPaywall(false); setIsPaid(true); }} />
+          </View>
+        )}
+      </View>
+    )
   }
 
   return (

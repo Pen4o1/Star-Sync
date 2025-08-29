@@ -7,11 +7,13 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import UserDatePicker from '../../components/UserDatePicker';
+import { getUid } from '../../services/uidService';
 
 const SignIn = () => {
   const [name, setName] = useState("");
@@ -20,11 +22,14 @@ const SignIn = () => {
   const handleSignIn = async () => {
     try {
       await AsyncStorage.setItem('userName', name);
-      // Format date as YYYY-MM-DD in local time
       const pad = n => n < 10 ? '0' + n : n;
       const localDateString = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
       await AsyncStorage.setItem('userBirthDate', localDateString);
-    router.push("/Home");
+
+      const uid = await getUid();
+      await AsyncStorage.setItem('uid', uid);
+
+      router.push("/Home");
     } catch (e) {
       alert('Failed to save user data');
     }
@@ -49,6 +54,7 @@ const SignIn = () => {
           >
             <Text style={styles.heading}>Welcome!</Text>
             <Text style={styles.subHeading}>Enter your name and date of birth</Text>
+
             <View style={styles.inputContainer}>
               <Text style={[styles.label, styles.labelWhite]}>Name</Text>
               <View style={styles.inputWrapper}>
@@ -61,14 +67,16 @@ const SignIn = () => {
                 />
               </View>
             </View>
+
             <UserDatePicker value={date} onChange={setDate} />
+
             <TouchableOpacity
               style={styles.loginButton}
               onPress={handleSignIn}
               disabled={!name}
             >
               <Text style={styles.loginButtonText}>Continue</Text>
-                </TouchableOpacity>
+            </TouchableOpacity>
           </LinearGradient>
         </View>
       </ScrollView>
@@ -150,6 +158,18 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: "#fff",
     fontSize: 18,
+    fontWeight: "bold",
+  },
+  restoreButton: {
+    backgroundColor: "#6A5ACD",
+    padding: 12,
+    borderRadius: 20,
+    alignItems: "center",
+    marginTop: 15,
+  },
+  restoreButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
