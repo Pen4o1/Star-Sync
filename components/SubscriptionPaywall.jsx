@@ -4,30 +4,31 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
 import { initIAP, getSubscriptions, buySubscription, setupPurchaseListeners } from '../services/iapService';
 
+// Plans just describe UI mapping to basePlanId (not real productIds anymore)
 const plans = [
   {
     title: '1 Month',
-    price: '9,99 BGN',
+    fallbackPrice: '9,99 BGN',
     subtitle: 'billed monthly',
     trial: '3 DAYS TRIAL',
     popular: false,
-    productId: 'monthly-plan',
+    basePlanId: 'monthly-plan',
   },
   {
     title: '1 Year Trial',
-    price: '69,99 BGN',
+    fallbackPrice: '69,99 BGN',
     subtitle: 'billed yearly',
     trial: '7 DAYS TRIAL',
     popular: true,
-    productId: 'yearly-plan-trial',
+    basePlanId: 'yearly-plan-trial',
   },
   {
     title: '1 Year Discount',
-    price: '49,99 BGN',
+    fallbackPrice: '49,99 BGN',
     subtitle: 'billed yearly',
     trial: 'NO TRIAL',
     popular: false,
-    productId: 'yearly-plan-discount',
+    basePlanId: 'yearly-plan-discount',
   },
 ];
 
@@ -42,7 +43,7 @@ const features = [
 
 export default function SubscriptionPaywall({ onClose, onSubscribe }) {
   const [selectedPlan, setSelectedPlan] = useState(0);
-  const [iapProducts, setIapProducts] = useState([]);
+  const [iapOffers, setIapOffers] = useState([]);
   const [iapReady, setIapReady] = useState(false);
 
   useEffect(() => {
@@ -50,8 +51,8 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
     (async () => {
       await initIAP();
       setIapReady(true);
-      const subs = await getSubscriptions();
-      setIapProducts(subs || []);
+      const offers = await getSubscriptions();
+      setIapOffers(offers || []);
       removeListeners = setupPurchaseListeners(
         (purchase) => onSubscribe?.(purchase),
         (error) => console.warn('IAP purchase error:', error)
@@ -62,13 +63,13 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
   }, [onSubscribe]);
 
   const getPriceForPlan = (plan) => {
-    const match = iapProducts.find((p) => p.basePlanId === plan.productId);
-    return match?.price || plan.price;
+    const match = iapOffers.find((p) => p.basePlanId === plan.basePlanId);
+    return match?.price || plan.fallbackPrice;
   };
 
   const handleSubscribe = async () => {
     const plan = plans[selectedPlan];
-    const offer = iapProducts.find((p) => p.basePlanId === plan.productId);
+    const offer = iapOffers.find((p) => p.basePlanId === plan.basePlanId);
     if (!offer?.offerToken) {
       Alert.alert('Store unavailable', 'No subscription offers found.');
       return;
@@ -84,9 +85,16 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
           <TouchableOpacity onPress={onClose} style={{ position: 'absolute', right: 16, top: 16, zIndex: 10 }}>
             <Text style={{ fontSize: 28, color: Colors.light.text, opacity: 0.4 }}>×</Text>
           </TouchableOpacity>
-          <Image source={require('../assets/images/onboarding/Onboarding1.png')} style={{ width: 120, height: 120, marginBottom: 16 }} />
-          <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 4, color: Colors.light.text }}>Get started today</Text>
-          <Text style={{ fontSize: 18, textAlign: 'center', color: Colors.light.text, opacity: 0.7 }}>Horoscopes Light</Text>
+          <Image
+            source={require('../assets/images/onboarding/Onboarding1.png')}
+            style={{ width: 120, height: 120, marginBottom: 16 }}
+          />
+          <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 4, color: Colors.light.text }}>
+            Get started today
+          </Text>
+          <Text style={{ fontSize: 18, textAlign: 'center', color: Colors.light.text, opacity: 0.7 }}>
+            Horoscopes Light
+          </Text>
         </View>
 
         {/* Plan Cards */}
@@ -106,18 +114,41 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
                 alignItems: 'center',
               }}
             >
-              {plan.popular && <Text style={{ fontSize: 12, color: Colors.light.priceText, fontWeight: 'bold', marginBottom: 4 }}>MOST POPULAR</Text>}
-              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 4, color: Colors.light.text }}>{plan.title}</Text>
-              <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 4, color: Colors.light.priceText }}>{getPriceForPlan(plan)}</Text>
-              <Text style={{ fontSize: 12, textAlign: 'center', color: Colors.light.text, opacity: 0.6, marginBottom: 8 }}>{plan.subtitle}</Text>
-              <Text style={{ fontSize: 12, textAlign: 'center', color: Colors.light.priceText, fontWeight: '600' }}>{plan.trial}</Text>
+              {plan.popular && (
+                <Text style={{ fontSize: 12, color: Colors.light.priceText, fontWeight: 'bold', marginBottom: 4 }}>
+                  MOST POPULAR
+                </Text>
+              )}
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 4, color: Colors.light.text }}>
+                {plan.title}
+              </Text>
+              <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 4, color: Colors.light.priceText }}>
+                {getPriceForPlan(plan)}
+              </Text>
+              <Text style={{ fontSize: 12, textAlign: 'center', color: Colors.light.text, opacity: 0.6, marginBottom: 8 }}>
+                {plan.subtitle}
+              </Text>
+              <Text style={{ fontSize: 12, textAlign: 'center', color: Colors.light.priceText, fontWeight: '600' }}>
+                {plan.trial}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Features */}
-        <View style={{ backgroundColor: Colors.light.text, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 24, paddingVertical: 24, marginBottom: 24 }}>
-          <Text style={{ color: Colors.light.background, fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>Unlock what the future holds for you</Text>
+        <View
+          style={{
+            backgroundColor: Colors.light.text,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingHorizontal: 24,
+            paddingVertical: 24,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: Colors.light.background, fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+            Unlock what the future holds for you
+          </Text>
           {features.map((feature, idx) => (
             <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
               <FontAwesome name="check" size={20} color={Colors.light.priceText} />
@@ -130,7 +161,12 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
       {/* Subscribe Button */}
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 24, paddingBottom: 24 }}>
         <TouchableOpacity
-          style={{ backgroundColor: Colors.light.buttonBg, borderRadius: 16, paddingVertical: 16, opacity: iapReady ? 1 : 0.6 }}
+          style={{
+            backgroundColor: Colors.light.buttonBg,
+            borderRadius: 16,
+            paddingVertical: 16,
+            opacity: iapReady ? 1 : 0.6,
+          }}
           disabled={!iapReady}
           onPress={handleSubscribe}
         >
