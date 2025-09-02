@@ -26,6 +26,7 @@ export interface VerifySubscriptionPayload {
   uid: string;
   packageName: string;
   productId: string;
+  basePlanId?: string; 
   purchaseToken: string;
   orderId?: string | null;
   expiryTime?: string | null;
@@ -36,6 +37,7 @@ export interface VerifySubscriptionPayload {
 export interface SubscriptionStatusResponse {
   status: 'active' | 'none' | string;
   productId?: string;
+  basePlanId?: string; 
   autoRenewing?: boolean;
   expiryTime?: string | null;
   entitlements?: string[];

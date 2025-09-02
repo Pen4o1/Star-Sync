@@ -40,10 +40,10 @@ export async function initIAP(): Promise<void> {
  */
 export async function getSubscriptions(): Promise<
   {
-    productId: string;      // "subscriptions"
-    basePlanId: string;     // e.g. "monthly-plan"
-    offerToken: string;     // token required to buy
-    price: string;          // first pricing phase (trial/recurring)
+    productId: string;     
+    basePlanId: string;    
+    offerToken: string;     
+    price: string;          
     title: string;
     description: string;
   }[]
