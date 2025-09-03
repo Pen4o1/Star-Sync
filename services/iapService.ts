@@ -10,15 +10,13 @@ import { verifySubscription } from './horoscopeSubService';
 import { getUid } from './uidService';
 import { Alert } from 'react-native';
 
+const SUBS_PRODUCT_ID = 'subscriptions'; // <-- this matches your Play Console productId
 
-const SUBS_PRODUCT_ID = 'subscriptions';
-
-// Cache the last selected offer so we can send basePlanId to backend
+// Cache the last selected offer
 let lastSelectedOffer:
   | { productId: string; basePlanId?: string; offerToken?: string }
   | null = null;
 
-// Initialize Google Play Billing connection
 export async function initIAP(): Promise<void> {
   try {
     await RNIap.initConnection();
@@ -36,20 +34,22 @@ export async function initIAP(): Promise<void> {
 }
 
 /**
- * Get available base plans + offers for the subscription pFroduct.
+ * Get available subscription offers for the product.
  */
 export async function getSubscriptions(): Promise<
   {
-    productId: string;     
-    basePlanId: string;    
-    offerToken: string;     
-    price: string;          
+    productId: string;
+    basePlanId: string;
+    offerToken: string;
+    price: string;
     title: string;
     description: string;
   }[]
 > {
   try {
-    const subs: Subscription[] = await RNIap.getSubscriptions({ skus: [SUBS_PRODUCT_ID] });
+    const subs: Subscription[] = await RNIap.getSubscriptions({
+      skus: [SUBS_PRODUCT_ID],
+    });
 
     const offers: {
       productId: string;
@@ -67,10 +67,15 @@ export async function getSubscriptions(): Promise<
 
       subscriptionOfferDetails?.forEach((offer) => {
         const pricingPhase = offer?.pricingPhases?.pricingPhaseList?.[0];
-        if (!pricingPhase?.formattedPrice || !offer?.offerToken || !offer?.basePlanId) return;
+        if (
+          !pricingPhase?.formattedPrice ||
+          !offer?.offerToken ||
+          !offer?.basePlanId
+        )
+          return;
 
         offers.push({
-          productId: sub.productId, // "subscriptions"
+          productId: sub.productId, // should be "subscriptions"
           basePlanId: offer.basePlanId,
           offerToken: offer.offerToken,
           price: pricingPhase.formattedPrice,
@@ -93,7 +98,7 @@ export async function getSubscriptions(): Promise<
  * Buy a specific base plan/offer.
  */
 export async function buySubscription(
-  productId: string,      // "subscriptions"
+  productId: string,
   offerToken: string,
   basePlanId?: string,
 ): Promise<SubscriptionPurchase | null> {
@@ -113,7 +118,7 @@ export async function buySubscription(
   }
 }
 
-// Restore all available purchases
+// Restore purchases
 export async function restoreSubscriptions(): Promise<ProductPurchase[]> {
   try {
     const purchases = await RNIap.getAvailablePurchases();
@@ -126,13 +131,16 @@ export async function restoreSubscriptions(): Promise<ProductPurchase[]> {
   }
 }
 
-// Check if user has any active subscription
 export async function hasActiveSubscription(): Promise<boolean> {
   try {
     const purchases = await RNIap.getAvailablePurchases();
-    const hasAnySubs = purchases?.some((p) => p.productId === SUBS_PRODUCT_ID) ?? false;
+    const hasAnySubs =
+      purchases?.some((p) => p.productId === SUBS_PRODUCT_ID) ?? false;
 
-    Alert.alert('Active Subscription Check', JSON.stringify({ hasAnySubs, purchases }, null, 2));
+    Alert.alert(
+      'Active Subscription Check',
+      JSON.stringify({ hasAnySubs, purchases }, null, 2),
+    );
     return hasAnySubs;
   } catch (err: any) {
     console.warn('hasActiveSubscription error:', err);
@@ -142,67 +150,79 @@ export async function hasActiveSubscription(): Promise<boolean> {
 }
 
 /**
- * Purchase listener (acknowledge + backend verify).
+ * Purchase listener: verify first, then acknowledge.
  */
 export function setupPurchaseListeners(
   onSuccess?: (purchase: ProductPurchase) => void,
   onError?: (error: PurchaseError) => void,
 ): () => void {
-  const updateListener = RNIap.purchaseUpdatedListener(async (purchase: ProductPurchase) => {
-    if (!purchase.transactionReceipt) return;
-
-    try {
-      if (!(purchase as any).acknowledgedAndroid) {
-        try {
-          await RNIap.finishTransaction({ purchase, isConsumable: false });
-        } catch (err: any) {
-          if (err?.code === 'E_SERVICE_ERROR') {
-            console.warn('E_SERVICE_ERROR, retrying finishTransaction...');
-            setTimeout(async () => {
-              try {
-                await RNIap.finishTransaction({ purchase, isConsumable: false });
-              } catch (finalErr) {
-                console.warn('Final finishTransaction failure:', finalErr);
-              }
-            }, 2000);
-          } else {
-            throw err;
-          }
-        }
-      }
+  const updateListener = RNIap.purchaseUpdatedListener(
+    async (purchase: ProductPurchase) => {
+      if (!purchase.transactionReceipt) return;
 
       try {
         const uid = await getUid();
 
+        const basePlanId =
+          lastSelectedOffer?.basePlanId ??
+          (purchase as any).subscriptionOfferDetails?.[0]?.basePlanId ??
+          null;
+
         const payload = {
           uid,
           packageName: 'com.buzly.horoscope2',
-          productId: purchase.productId, // "subscriptions"
-          basePlanId: lastSelectedOffer?.basePlanId,
+          productId: purchase.productId,
+          basePlanId,
+          offerToken: lastSelectedOffer?.offerToken,
           purchaseToken: (purchase as any).purchaseToken,
           orderId: purchase.transactionId ?? null,
           autoRenewing: (purchase as any).autoRenewingAndroid ?? true,
-          expiryTime: (purchase as any).expiryTimeAndroid ?? null,
+          expiryTime: (purchase as any).expiryTimeAndroid
+            ? new Date(Number((purchase as any).expiryTimeAndroid)).toISOString()
+            : null,
           status: 'active' as const,
         };
 
         console.log('Verifying subscription payload:', payload);
+
+        // 🔔 Show full payload BEFORE sending
+        Alert.alert('Payload to Backend 📦', JSON.stringify(payload, null, 2));
+
+        // 🔑 Verify with backend
         const response = await verifySubscription(payload as any);
-
         Alert.alert('Subscription Verified ✅', JSON.stringify(response, null, 2));
-      } catch (err: any) {
-        console.warn('Failed to verify purchase with backend:', err);
-        Alert.alert('Verification Error', JSON.stringify(err, null, 2));
-      }
 
-      onSuccess?.(purchase);
-    } catch (err: any) {
-      console.warn('purchaseUpdated flow error:', err);
-      Alert.alert('Purchase Flow Error', JSON.stringify(err, null, 2));
-    } finally {
-      lastSelectedOffer = null;
-    }
-  });
+        if (!(purchase as any).acknowledgedAndroid) {
+          try {
+            await RNIap.finishTransaction({ purchase, isConsumable: false });
+          } catch (err: any) {
+            if (err?.code === 'E_SERVICE_ERROR') {
+              console.warn('E_SERVICE_ERROR, retrying finishTransaction...');
+              setTimeout(async () => {
+                try {
+                  await RNIap.finishTransaction({
+                    purchase,
+                    isConsumable: false,
+                  });
+                } catch (finalErr) {
+                  console.warn('Final finishTransaction failure:', finalErr);
+                }
+              }, 2000);
+            } else {
+              throw err;
+            }
+          }
+        }
+
+        onSuccess?.(purchase);
+      } catch (err: any) {
+        console.warn('purchaseUpdated flow error:', err);
+        Alert.alert('Purchase Flow Error', JSON.stringify(err, null, 2));
+      } finally {
+        lastSelectedOffer = null;
+      }
+    },
+  );
 
   const errorListener = RNIap.purchaseErrorListener((error: PurchaseError) => {
     console.warn('Purchase error:', error);
@@ -216,22 +236,33 @@ export function setupPurchaseListeners(
   };
 }
 
-// Restore and verify with backend
-export async function restorePurchasesForUid(uid?: string): Promise<ProductPurchase[]> {
+
+/**
+ * Restore purchases and verify with backend
+ */
+export async function restorePurchasesForUid(
+  uid?: string,
+): Promise<ProductPurchase[]> {
   try {
     const resolvedUid = uid ?? (await getUid());
     const purchases = await RNIap.getAvailablePurchases();
 
     for (const p of purchases ?? []) {
       try {
+        const basePlanId =
+          (p as any).subscriptionOfferDetails?.[0]?.basePlanId ?? null;
+
         const payload = {
           uid: resolvedUid,
           packageName: 'com.buzly.horoscope2',
           productId: p.productId,
+          basePlanId,
           purchaseToken: (p as any).purchaseToken,
           orderId: p.transactionId ?? null,
           autoRenewing: (p as any).autoRenewingAndroid ?? true,
-          expiryTime: (p as any).expiryTimeAndroid ?? null,
+          expiryTime: (p as any).expiryTimeAndroid
+            ? new Date(Number((p as any).expiryTimeAndroid)).toISOString()
+            : null,
           status: 'active' as const,
         };
 
