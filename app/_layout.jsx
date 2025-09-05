@@ -7,12 +7,14 @@ import ThemeContext from "../theme/ThemeContext";
 import theme from "../theme/Theme";
 import { EventRegister } from "react-native-event-listeners";
 import DropdownMenu from "../components/HomeComponents/DropdownMenu";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import SubscriptionPaywall from '../components/SubscriptionPaywall';
-import { initIAP } from '../services/iapService';
-import { getEntitlements } from '../services/horoscopeSubService';
-import { getUid } from '../services/uidService';
-import SubscriptionContext from '../context/SubscriptionContext';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import SubscriptionPaywall from "../components/SubscriptionPaywall";
+import { initIAP } from "../services/iapService";
+import { getEntitlements } from "../services/horoscopeSubService";
+import { getUid } from "../services/uidService";
+import SubscriptionContext from "../context/SubscriptionContext";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { BannerAd, BannerAdSize } from "react-native-google-mobile-ads";
 
 const _layout = () => {
   const [fontsLoaded, error] = useFonts({
@@ -45,29 +47,34 @@ const _layout = () => {
   useEffect(() => {
     const checkUserSignIn = async () => {
       try {
-        const userName = await AsyncStorage.getItem('userName');
-        const userBirthDate = await AsyncStorage.getItem('userBirthDate');
+        const userName = await AsyncStorage.getItem("userName");
+        const userBirthDate = await AsyncStorage.getItem("userBirthDate");
         if (
-          userName && userName.trim() !== '' &&
-          userBirthDate && userBirthDate.trim() !== ''
+          userName &&
+          userName.trim() !== "" &&
+          userBirthDate &&
+          userBirthDate.trim() !== ""
         ) {
           setIsUserSignedIn(true);
-          if ((segments[0] === '(auth)' && segments[1] !== 'EditUser') || segments.length === 0) {
+          if (
+            (segments[0] === "(auth)" && segments[1] !== "EditUser") ||
+            segments.length === 0
+          ) {
             setTimeout(() => {
-              router.replace('/Home');
+              router.replace("/Home");
             }, 100);
           }
         } else {
           setIsUserSignedIn(false);
           setShowPaywall(false);
-          if (segments[0] !== '(auth)' && segments.length > 0) {
+          if (segments[0] !== "(auth)" && segments.length > 0) {
             setTimeout(() => {
-              router.replace('/');
+              router.replace("/");
             }, 100);
           }
         }
       } catch (error) {
-        console.error('Error checking user sign in status:', error);
+        console.error("Error checking user sign in status:", error);
         setIsUserSignedIn(false);
       } finally {
         setIsLoading(false);
@@ -139,23 +146,44 @@ const _layout = () => {
   return (
     <ThemeContext.Provider value={darkMode ? theme.dark : theme.light}>
       <SubscriptionContext.Provider value={{ isSubscribed, openPaywall }}>
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
           {isUserSignedIn && !showPaywall && <DropdownMenu />}
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />
             <Stack.Screen name="(auth)" />
           </Stack>
+
           {isUserSignedIn && showPaywall && (
-            <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
+            <View
+              style={{
+                position: "absolute",
+                zIndex: 100,
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+              }}
+            >
               <SubscriptionPaywall
                 onClose={() => setShowPaywall(false)}
                 onSubscribe={handleSubscribe}
               />
             </View>
           )}
+
+          {/* Banner Ad at Bottom */}
+          {isUserSignedIn && !isSubscribed && (
+            <View style={styles.bannerContainer}>
+              <BannerAd
+                unitId="ca-app-pub-2666074277435964/5175351704"
+                size={BannerAdSize.BANNER}
+              />
+            </View>
+          )}
+
           <StatusBar style="light" />
-        </View>
+        </SafeAreaView>
       </SubscriptionContext.Provider>
     </ThemeContext.Provider>
   );
@@ -167,5 +195,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  bannerContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
 });

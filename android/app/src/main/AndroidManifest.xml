@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.buzly.horoscope2">
 
   <uses-permission android:name="android.permission.INTERNET"/>
@@ -23,11 +24,18 @@
       android:allowBackup="true"
       android:theme="@style/AppTheme">
 
+    <!-- Expo Updates config -->
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="true"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL" android:value="https://u.expo.dev/f3b65c19-f50c-4e86-8e41-aaa310b92b7b"/>
     <meta-data android:name="expo.modules.updates.EXPO_RUNTIME_VERSION" android:value="@string/expo_runtime_version"/>
+
+    <!-- ✅ AdMob App ID with tools:replace fix -->
+    <meta-data
+        android:name="com.google.android.gms.ads.APPLICATION_ID"
+        android:value="ca-app-pub-2666074277435964~2495726781"
+        tools:replace="android:value"/>
 
     <activity
         android:name=".MainActivity"
