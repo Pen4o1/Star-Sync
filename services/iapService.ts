@@ -10,7 +10,7 @@ import { verifySubscription } from './horoscopeSubService';
 import { getUid } from './uidService';
 import { Alert } from 'react-native';
 
-const SUBS_PRODUCT_ID = 'subscriptions'; // <-- this matches your Play Console productId
+const SUBS_PRODUCT_ID = 'subscriptions';
 
 // Cache the last selected offer
 let lastSelectedOffer:
@@ -20,7 +20,6 @@ let lastSelectedOffer:
 export async function initIAP(): Promise<void> {
   try {
     await RNIap.initConnection();
-    console.log('IAP connected');
 
     if (RNIap.flushFailedPurchasesCachedAsPendingAndroid) {
       try {
@@ -33,9 +32,6 @@ export async function initIAP(): Promise<void> {
   }
 }
 
-/**
- * Get available subscription offers for the product.
- */
 export async function getSubscriptions(): Promise<
   {
     productId: string;
@@ -75,7 +71,7 @@ export async function getSubscriptions(): Promise<
           return;
 
         offers.push({
-          productId: sub.productId, // should be "subscriptions"
+          productId: sub.productId,
           basePlanId: offer.basePlanId,
           offerToken: offer.offerToken,
           price: pricingPhase.formattedPrice,
@@ -85,7 +81,6 @@ export async function getSubscriptions(): Promise<
       });
     });
 
-    console.log('Available subscription offers:', offers);
     return offers;
   } catch (err: any) {
     console.warn('getSubscriptions error:', err);
@@ -94,9 +89,6 @@ export async function getSubscriptions(): Promise<
   }
 }
 
-/**
- * Buy a specific base plan/offer.
- */
 export async function buySubscription(
   productId: string,
   offerToken: string,
@@ -110,7 +102,7 @@ export async function buySubscription(
       subscriptionOffers: [{ sku: productId, offerToken }],
     });
 
-    return null; // purchase delivered via listener
+    return null;
   } catch (err: any) {
     console.warn('buySubscription error:', err);
     Alert.alert('Purchase Error', JSON.stringify(err, null, 2));
@@ -118,11 +110,9 @@ export async function buySubscription(
   }
 }
 
-// Restore purchases
 export async function restoreSubscriptions(): Promise<ProductPurchase[]> {
   try {
     const purchases = await RNIap.getAvailablePurchases();
-    Alert.alert('Restore Purchases', JSON.stringify(purchases, null, 2));
     return purchases ?? [];
   } catch (err: any) {
     console.warn('restoreSubscriptions error:', err);
@@ -137,10 +127,6 @@ export async function hasActiveSubscription(): Promise<boolean> {
     const hasAnySubs =
       purchases?.some((p) => p.productId === SUBS_PRODUCT_ID) ?? false;
 
-    Alert.alert(
-      'Active Subscription Check',
-      JSON.stringify({ hasAnySubs, purchases }, null, 2),
-    );
     return hasAnySubs;
   } catch (err: any) {
     console.warn('hasActiveSubscription error:', err);
@@ -149,9 +135,6 @@ export async function hasActiveSubscription(): Promise<boolean> {
   }
 }
 
-/**
- * Purchase listener: verify first, then acknowledge.
- */
 export function setupPurchaseListeners(
   onSuccess?: (purchase: ProductPurchase) => void,
   onError?: (error: PurchaseError) => void,
@@ -178,26 +161,20 @@ export function setupPurchaseListeners(
           orderId: purchase.transactionId ?? null,
           autoRenewing: (purchase as any).autoRenewingAndroid ?? true,
           expiryTime: (purchase as any).expiryTimeAndroid
-            ? new Date(Number((purchase as any).expiryTimeAndroid)).toISOString()
+            ? new Date(
+                Number((purchase as any).expiryTimeAndroid) + 5 * 60 * 1000,
+              ).toISOString()
             : null,
           status: 'active' as const,
         };
 
-        console.log('Verifying subscription payload:', payload);
-
-        // 🔔 Show full payload BEFORE sending
-        Alert.alert('Payload to Backend 📦', JSON.stringify(payload, null, 2));
-
-        // 🔑 Verify with backend
-        const response = await verifySubscription(payload as any);
-        Alert.alert('Subscription Verified ✅', JSON.stringify(response, null, 2));
+        await verifySubscription(payload as any);
 
         if (!(purchase as any).acknowledgedAndroid) {
           try {
             await RNIap.finishTransaction({ purchase, isConsumable: false });
           } catch (err: any) {
             if (err?.code === 'E_SERVICE_ERROR') {
-              console.warn('E_SERVICE_ERROR, retrying finishTransaction...');
               setTimeout(async () => {
                 try {
                   await RNIap.finishTransaction({
@@ -236,10 +213,6 @@ export function setupPurchaseListeners(
   };
 }
 
-
-/**
- * Restore purchases and verify with backend
- */
 export async function restorePurchasesForUid(
   uid?: string,
 ): Promise<ProductPurchase[]> {
@@ -261,14 +234,12 @@ export async function restorePurchasesForUid(
           orderId: p.transactionId ?? null,
           autoRenewing: (p as any).autoRenewingAndroid ?? true,
           expiryTime: (p as any).expiryTimeAndroid
-            ? new Date(Number((p as any).expiryTimeAndroid)).toISOString()
+            ? new Date(Number((p as any).expiryTimeAndroid) + 5 * 60 * 1000).toISOString()
             : null,
           status: 'active' as const,
         };
 
-        console.log('Verifying restored payload:', payload);
-        const response = await verifySubscription(payload as any);
-        Alert.alert('Restored ✅', JSON.stringify(response, null, 2));
+        await verifySubscription(payload as any);
       } catch (err: any) {
         console.warn('Failed to verify restored purchase:', err);
         Alert.alert('Restore Error', JSON.stringify(err, null, 2));
