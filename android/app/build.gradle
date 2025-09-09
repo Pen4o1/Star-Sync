@@ -60,6 +60,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 44
         versionName "1.4.4"
+        multiDexEnabled true
     }
 
     flavorDimensions "store"
@@ -105,6 +106,17 @@ android {
         jniLibs {
             useLegacyPackaging (findProperty('expo.useLegacyPackaging')?.toBoolean() ?: false)
         }
+
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/*.kotlin_module'
+        exclude 'META-INF/proguard/androidx-annotations.pro'
     }
 }
 
@@ -121,6 +133,10 @@ android {
 
 dependencies {
     implementation("com.facebook.react:react-android")
+
+    implementation 'com.google.android.gms:play-services-ads:24.5.0'
+    
+    implementation 'androidx.multidex:multidex:2.0.1'
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
