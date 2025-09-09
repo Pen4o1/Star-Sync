@@ -34,8 +34,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      "react-native-google-mobile-ads"
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
