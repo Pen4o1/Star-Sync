@@ -58,8 +58,8 @@ android {
         applicationId 'com.buzly.horoscope2'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 42
-        versionName "1.4.2"
+        versionCode 44
+        versionName "1.4.4"
     }
 
     flavorDimensions "store"
