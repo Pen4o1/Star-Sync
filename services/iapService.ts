@@ -1,4 +1,3 @@
-// services/iapService.android.ts
 import * as RNIap from 'react-native-iap';
 import type {
   Subscription,
@@ -10,7 +9,7 @@ import { verifySubscription } from './horoscopeSubService';
 import { getUid } from './uidService';
 import { Alert } from 'react-native';
 
-const SUBS_PRODUCT_ID = 'subscriptions'; // <-- this matches your Play Console productId
+const SUBS_PRODUCT_ID = 'subscriptions';
 
 // Cache the last selected offer
 let lastSelectedOffer:

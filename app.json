@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.appiato.horoscope",
+      "bundleIdentifier": "com.buzly.horoscope2",
       "runtimeVersion": {
         "policy": "appVersion"
       }
@@ -25,7 +25,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.appiato.horoscope",
+      "package": "com.buzly.horoscope2",
       "runtimeVersion": "1.0.9"
     },
     "web": {
