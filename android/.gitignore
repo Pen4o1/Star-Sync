@@ -19,3 +19,5 @@ keystore.properties
 
 # Bundle artifacts
 *.jsbundle
+
+*.log
