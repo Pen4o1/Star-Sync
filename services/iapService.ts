@@ -172,13 +172,7 @@ export function setupPurchaseListeners(
           packageName: 'com.buzly.horoscope2',
           productId: purchase.productId,
           basePlanId,
-          offerToken: lastSelectedOffer?.offerToken,
           purchaseToken: (purchase as any).purchaseToken,
-          orderId: purchase.transactionId ?? null,
-          autoRenewing: (purchase as any).autoRenewingAndroid ?? true,
-          expiryTime: (purchase as any).expiryTimeAndroid
-            ? new Date(Number((purchase as any).expiryTimeAndroid)).toISOString()
-            : null,
           status: 'active' as const,
         };
 
@@ -257,11 +251,6 @@ export async function restorePurchasesForUid(
           productId: p.productId,
           basePlanId,
           purchaseToken: (p as any).purchaseToken,
-          orderId: p.transactionId ?? null,
-          autoRenewing: (p as any).autoRenewingAndroid ?? true,
-          expiryTime: (p as any).expiryTimeAndroid
-            ? new Date(Number((p as any).expiryTimeAndroid)).toISOString()
-            : null,
           status: 'active' as const,
         };
 
