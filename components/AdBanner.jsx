@@ -1,16 +1,13 @@
 import React from 'react'
-import { View, StyleSheet } from 'react-native'
-import { AdMobBanner } from 'expo-ads-admob'
+import { View, StyleSheet, Text } from 'react-native'
 
-export default function AdBanner({ unitID }) {
+// Dummy banner placeholder that is safe without any ads SDK installed
+export default function AdBanner() {
   return (
     <View style={styles.container}>
-      <AdMobBanner
-        bannerSize="smartBannerPortrait"
-        adUnitID={unitID}
-        servePersonalizedAds
-        onDidFailToReceiveAdWithError={(error) => console.error(error)}
-      />
+      <View style={styles.placeholder}>
+        <Text style={styles.placeholderText}>Ad Banner (placeholder)</Text>
+      </View>
     </View>
   )
 }
@@ -20,5 +17,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 10,
+  },
+  placeholder: {
+    width: '96%',
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: '#e5e7eb',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+  },
+  placeholderText: {
+    color: '#6b7280',
+    fontSize: 14,
   },
 })

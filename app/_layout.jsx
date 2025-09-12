@@ -13,6 +13,7 @@ import { initIAP } from '../services/iapService';
 import { getEntitlements } from '../services/horoscopeSubService';
 import { getUid } from '../services/uidService';
 import SubscriptionContext from '../context/SubscriptionContext';
+import AdBanner from '../components/AdBanner';
 
 const _layout = () => {
   const [fontsLoaded, error] = useFonts({
@@ -146,6 +147,11 @@ const _layout = () => {
             <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />
             <Stack.Screen name="(auth)" />
           </Stack>
+          {!isSubscribed && !showPaywall && (
+            <View style={{ width: '100%' }}>
+              <AdBanner unitID="ca-app-pub-2666074277435964/7453491051" />
+            </View>
+          )}
           {isUserSignedIn && showPaywall && (
             <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
               <SubscriptionPaywall
