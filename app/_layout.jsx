@@ -14,6 +14,7 @@ import { getEntitlements } from '../services/horoscopeSubService';
 import { getUid } from '../services/uidService';
 import SubscriptionContext from '../context/SubscriptionContext';
 import AdBanner from '../components/AdBanner';
+import mobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
 
 const _layout = () => {
   const [fontsLoaded, error] = useFonts({
@@ -79,6 +80,17 @@ const _layout = () => {
     }, 100);
     return () => clearTimeout(timer);
   }, [segments]);
+
+  useEffect(() => {
+    // Initialize Google Mobile Ads SDK once on app start
+    mobileAds()
+      .setRequestConfiguration({
+        maxAdContentRating: MaxAdContentRating.T,
+        tagForChildDirectedTreatment: false,
+        tagForUnderAgeOfConsent: false,
+      })
+      .then(() => mobileAds().initialize());
+  }, []);
 
   useEffect(() => {
     const runIapCheck = async () => {

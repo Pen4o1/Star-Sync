@@ -1,12 +1,59 @@
-import React from 'react'
-import { View, StyleSheet, Text } from 'react-native'
+import React, { useMemo } from 'react'
+import { View, StyleSheet, Text, Platform } from 'react-native'
 
-// Dummy banner placeholder that is safe without any ads SDK installed
-export default function AdBanner() {
+let BannerAd = null
+let BannerAdSize = null
+let TestIds = null
+try {
+  // Optional dependency: react-native-google-mobile-ads
+  // This will throw if the lib isn't installed; we catch to keep app stable.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const gma = require('react-native-google-mobile-ads')
+  BannerAd = gma.BannerAd
+  BannerAdSize = gma.BannerAdSize
+  TestIds = gma.TestIds
+} catch (e) {
+  // library not installed or not linked; fall back to placeholder
+}
+
+// Default production banner ad unit (Bottom banner) from your email
+const PROD_BANNER_UNIT_ID = 'ca-app-pub-2666074277435964/7453491051'
+
+// Renders AdMob banner when the library is available; otherwise shows a placeholder
+export default function AdBanner({ adUnitId, unitID, size = 'BANNER', onAdLoaded, onAdFailedToLoad }) {
+  const resolvedSize = useMemo(() => {
+    if (!BannerAdSize) return null
+    // Map string to constant if needed
+    return BannerAdSize[size] || BannerAdSize.BANNER
+  }, [size])
+
+  const resolvedAdUnitId = useMemo(() => {
+    // Use test ID in dev automatically; require explicit id in prod
+    if (TestIds && __DEV__) return TestIds.BANNER
+    // Support both adUnitId and unitID prop names
+    return adUnitId || unitID || PROD_BANNER_UNIT_ID
+  }, [adUnitId, unitID])
+
+  const canShowRealAd = BannerAd && resolvedSize && resolvedAdUnitId && (Platform.OS === 'android' || Platform.OS === 'ios')
+
+  if (canShowRealAd) {
+    return (
+      <View style={styles.container}>
+        <BannerAd
+          unitId={resolvedAdUnitId}
+          size={resolvedSize}
+          requestOptions={{ requestNonPersonalizedAdsOnly: false }}
+          onAdLoaded={onAdLoaded}
+          onAdFailedToLoad={onAdFailedToLoad}
+        />
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.placeholder}>
-        <Text style={styles.placeholderText}>Ad Banner (placeholder)</Text>
+        <Text style={styles.placeholderText}>Ad Banner</Text>
       </View>
     </View>
   )
