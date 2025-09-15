@@ -82,8 +82,14 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
         <View style={{ alignItems: 'center', paddingHorizontal: 24, paddingTop: 48, paddingBottom: 24 }}>
-          <TouchableOpacity onPress={onClose} style={{ position: 'absolute', right: 16, top: 16, zIndex: 10 }}>
-            <Text style={{ fontSize: 28, color: Colors.light.text, opacity: 0.4 }}>×</Text>
+          <TouchableOpacity
+            onPress={onClose}
+            hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+            accessibilityRole="button"
+            accessibilityLabel="Close paywall"
+            style={{ position: 'absolute', right: 8, top: 8, zIndex: 20, padding: 8 }}
+          >
+            <Text style={{ fontSize: 30, color: Colors.light.text, opacity: 0.6 }}>×</Text>
           </TouchableOpacity>
           <Image
             source={require('../assets/images/onboarding/Onboarding1.png')}
@@ -172,6 +178,13 @@ export default function SubscriptionPaywall({ onClose, onSubscribe }) {
         >
           <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: Colors.light.buttonText }}>
             {iapReady ? 'Start Free Trial' : 'Loading Store...'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Secondary dismiss action */}
+        <TouchableOpacity onPress={onClose} style={{ marginTop: 12, paddingVertical: 8 }} accessibilityRole="button" accessibilityLabel="Not now">
+          <Text style={{ textAlign: 'center', fontSize: 16, color: Colors.light.text, opacity: 0.7 }}>
+            Not now
           </Text>
         </TouchableOpacity>
       </View>

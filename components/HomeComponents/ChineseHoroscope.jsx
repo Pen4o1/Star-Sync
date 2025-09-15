@@ -17,6 +17,20 @@ export default function ChineseHoroscope() {
   const [userBirthdate, setUserBirthdate] = useState(null)
   const [chineseZodiacId, setChineseZodiacId] = useState(null)
 
+  const fetchHoroscope = async () => {
+    try {
+      if (!chineseZodiacId) return
+      setLoading(true)
+      const today = new Date().toISOString().split('T')[0]
+      const data = await getChineseDailyHoroscope(chineseZodiacId, today)
+      setHoroscope(data)
+    } catch (error) {
+      console.error('Error fetching Chinese horoscope:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     const loadUserData = async () => {
       const birthdate = await AsyncStorage.getItem('userBirthDate')
@@ -30,18 +44,6 @@ export default function ChineseHoroscope() {
 
   useEffect(() => {
     if (!chineseZodiacId) return
-  const fetchHoroscope = async () => {
-    try {
-      setLoading(true)
-      const today = new Date().toISOString().split('T')[0]
-        const data = await getChineseDailyHoroscope(chineseZodiacId, today)
-      setHoroscope(data)
-    } catch (error) {
-      console.error('Error fetching Chinese horoscope:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
     fetchHoroscope()
   }, [chineseZodiacId])
 

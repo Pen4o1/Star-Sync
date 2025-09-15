@@ -32,6 +32,7 @@ const _layout = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [hasDismissedPaywall, setHasDismissedPaywall] = useState(false);
   const router = useRouter();
   const segments = useSegments();
 
@@ -114,11 +115,11 @@ const _layout = () => {
 
   useEffect(() => {
     if (!isLoading && fontsLoaded && isUserSignedIn) {
-      setShowPaywall(!isSubscribed);
+      setShowPaywall(!isSubscribed && !hasDismissedPaywall);
     } else {
       setShowPaywall(false);
     }
-  }, [isLoading, fontsLoaded, isUserSignedIn, isSubscribed]);
+  }, [isLoading, fontsLoaded, isUserSignedIn, isSubscribed, hasDismissedPaywall]);
 
   useEffect(() => {
     if (error) throw error;
@@ -147,7 +148,10 @@ const _layout = () => {
     return null;
   }
 
-  const openPaywall = () => setShowPaywall(true);
+  const openPaywall = () => {
+    setHasDismissedPaywall(false);
+    setShowPaywall(true);
+  };
 
   return (
     <ThemeContext.Provider value={darkMode ? theme.dark : theme.light}>
@@ -167,7 +171,7 @@ const _layout = () => {
           {isUserSignedIn && showPaywall && (
             <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
               <SubscriptionPaywall
-                onClose={() => setShowPaywall(false)}
+                onClose={() => { setShowPaywall(false); setHasDismissedPaywall(true); }}
                 onSubscribe={handleSubscribe}
               />
             </View>

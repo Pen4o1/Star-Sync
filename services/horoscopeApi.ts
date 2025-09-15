@@ -5,7 +5,7 @@ const BASE_URL = 'https://cms.buzlylabs.com/horoscope_api';
 // Create axios instance with default config
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -68,6 +68,7 @@ export const getDailyHoroscope = async (zodiacId: number, date: string): Promise
     return response.data;
   } catch (error) {
     console.error('Error in getDailyHoroscope:', error);
+    alert(error.message);
     throw error;
   }
 };
@@ -78,6 +79,8 @@ export const getWeeklyHoroscope = async (zodiacId: number): Promise<HoroscopeRes
     return response.data;
   } catch (error) {
     console.error('Error in getWeeklyHoroscope:', error);
+    alert(error.message);
+
     throw error;
   }
 };
@@ -87,7 +90,8 @@ export const getMonthlyHoroscope = async (zodiacId: number): Promise<HoroscopeRe
     const response = await api.get(`/monthly/${zodiacId}`);
     return response.data;
   } catch (error) {
-    console.error('Error in getMonthlyHoroscope:', error);
+    console.error('Error in getMonthlyHoroscope:', error);   
+    alert(error.message);
     throw error;
   }
 };
@@ -98,6 +102,8 @@ export const getYearlyHoroscope = async (zodiacId: number): Promise<HoroscopeRes
     return response.data;
   } catch (error) {
     console.error('Error in getYearlyHoroscope:', error);
+    alert(error.message);
+
     throw error;
   }
 };
@@ -108,6 +114,8 @@ export const getFullHoroscope = async (zodiacId: number): Promise<HoroscopeRespo
     return response.data;
   } catch (error) {
     console.error('Error in getFullHoroscope:', error);
+    alert(error.message);
+
     throw error;
   }
 };
@@ -118,6 +126,8 @@ export const getChineseDailyHoroscope = async (chineseId: number, date: string):
     return response.data;
   } catch (error) {
     console.error('Error in getChineseDailyHoroscope:', error);
+    alert(error.message);
+
     throw error;
   }
 };
@@ -127,7 +137,9 @@ export const getChineseYearlyHoroscope = async (chineseId: number): Promise<Chin
     const response = await api.get(`/chinese_yearly/${chineseId}`);
     return response.data;
   } catch (error) {
-    console.error('Error in getChineseYearlyHoroscope:', error);
+    console.error('Error in getChineseYearlyHoroscope:', error);  
+    alert(error.message);
+
     throw error;
   }
 };
@@ -138,6 +150,8 @@ export const getChineseFullHoroscope = async (chineseId: number): Promise<Chines
     return response.data;
   } catch (error) {
     console.error('Error in getChineseFullHoroscope:', error);
+    alert(error.message);
+
     throw error;
   }
 };
@@ -148,6 +162,8 @@ export const getLoveMatch = async (sign1: string, sign2: string): Promise<MatchR
     return response.data;
   } catch (error) {
     console.error('Error in getLoveMatch:', error);
+    alert(error.message);
+
     throw error;
   }
 };
@@ -158,6 +174,8 @@ export const getFriendMatch = async (sign1: string, sign2: string): Promise<Matc
     return response.data;
   } catch (error) {
     console.error('Error in getFriendMatch:', error);
+    alert(error.message);
+
     throw error;
   }
 };
@@ -167,7 +185,9 @@ export const searchDreamBook = async (word: string): Promise<DreamBookSearchResp
     const response = await api.get(`/dreambook/search/?s=${word}`);
     return response.data;
   } catch (error) {
-    console.error('Error in searchDreamBook:', error);
+    console.error('Error in searchDreamBook:', error);  
+    alert(error.message);
+
     throw error;
   }
 };
@@ -178,6 +198,8 @@ export const getDreamBookWord = async (wordId: number): Promise<DreamBookWordRes
     return response.data;
   } catch (error) {
     console.error('Error in getDreamBookWord:', error);
+    alert(error.message);
+
     throw error;
   }
 };

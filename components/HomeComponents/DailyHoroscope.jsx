@@ -20,6 +20,20 @@ export default function DailyHoroscope() {
   const [userBirthdate, setUserBirthdate] = useState(null)
   const [zodiacId, setZodiacId] = useState(null)
 
+  const fetchHoroscope = async () => {
+    try {
+      if (!zodiacId) return
+      setLoading(true)
+      const today = new Date().toISOString().split('T')[0]
+      const data = await getDailyHoroscope(zodiacId, today)
+      setHoroscope(data)
+    } catch (error) {
+      console.error('Error fetching daily horoscope:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     const loadUserData = async () => {
       const birthdate = await AsyncStorage.getItem('userBirthDate')
@@ -33,18 +47,6 @@ export default function DailyHoroscope() {
 
   useEffect(() => {
     if (!zodiacId) return
-  const fetchHoroscope = async () => {
-    try {
-      setLoading(true)
-      const today = new Date().toISOString().split('T')[0]
-        const data = await getDailyHoroscope(zodiacId, today)
-      setHoroscope(data)
-    } catch (error) {
-      console.error('Error fetching daily horoscope:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
     fetchHoroscope()
   }, [zodiacId])
 
