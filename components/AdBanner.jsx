@@ -1,19 +1,8 @@
 import React, { useMemo } from 'react'
-import { View, StyleSheet, Text, Platform } from 'react-native'
+import { View, StyleSheet, Platform } from 'react-native'
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'
 
-let BannerAd = null
-let BannerAdSize = null
-let TestIds = null
-try {
-  const gma = require('react-native-google-mobile-ads')
-  BannerAd = gma.BannerAd
-  BannerAdSize = gma.BannerAdSize
-  TestIds = gma.TestIds
-} catch (e) {
-
-}
-
-// Default production banner ad unit (Bottom banner) from your email
+// Default production banner ad unit
 const PROD_BANNER_UNIT_ID = 'ca-app-pub-2666074277435964/7453491051'
 
 export default function AdBanner({ adUnitId, unitID, size = 'BANNER', onAdLoaded, onAdFailedToLoad }) {
@@ -27,7 +16,7 @@ export default function AdBanner({ adUnitId, unitID, size = 'BANNER', onAdLoaded
     return adUnitId || unitID || PROD_BANNER_UNIT_ID
   }, [adUnitId, unitID])
 
-  const canShowRealAd = BannerAd && resolvedSize && resolvedAdUnitId && (Platform.OS === 'android' || Platform.OS === 'ios')
+  const canShowRealAd = BannerAd && resolvedSize && resolvedAdUnitId && (Platform.OS === 'android')
 
   if (canShowRealAd) {
     return (
