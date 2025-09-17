@@ -12,8 +12,13 @@ export default function AdBanner({ adUnitId, unitID, size = 'BANNER', onAdLoaded
   }, [size])
 
   const resolvedAdUnitId = useMemo(() => {
-    if (TestIds && __DEV__) return TestIds.BANNER
-    return adUnitId || unitID || PROD_BANNER_UNIT_ID
+    if (adUnitId || unitID) {
+      return adUnitId || unitID
+    }
+    if (__DEV__ && TestIds?.BANNER) {
+      return TestIds.BANNER
+    }
+    return PROD_BANNER_UNIT_ID
   }, [adUnitId, unitID])
 
   const canShowRealAd = BannerAd && resolvedSize && resolvedAdUnitId && (Platform.OS === 'android')

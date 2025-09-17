@@ -178,7 +178,7 @@ const _layout = () => {
           )}
           <StatusBar style="light" />
         </View>
-      </SubscriptionContext.Provider>
+      </SubscriptionContext.Provider> 
     </ThemeContext.Provider>
   );
 };
