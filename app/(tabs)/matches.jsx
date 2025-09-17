@@ -107,13 +107,11 @@ export default function MatchScreen() {
     return (
       <View style={styles.container}>
         <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
-          <ScrollView style={styles.scrollView}>
-            <View style={{ padding: 24, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>Love & Friendship Matcher is a premium feature.</Text>
-              <TouchableOpacity onPress={() => setShowPaywall(true)} style={{ backgroundColor: '#FFAA1E', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 }}>
-                <Text style={{ color: '#000', fontWeight: 'bold' }}>Upgrade</Text>
-              </TouchableOpacity>
-            </View>
+          <ScrollView style={styles.scrollView} contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>Love & Friendship Matcher is a premium feature.</Text>
+            <TouchableOpacity onPress={() => setShowPaywall(true)} style={{ backgroundColor: '#FFAA1E', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 }}>
+              <Text style={{ color: '#000', fontWeight: 'bold' }}>Upgrade</Text>
+            </TouchableOpacity>
           </ScrollView>
         </LinearGradient>
         {showPaywall && (

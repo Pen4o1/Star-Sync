@@ -6,7 +6,7 @@ import ChineseHoroscope from '../../components/HomeComponents/ChineseHoroscope'
 import FeatureButtons from '../../components/HomeComponents/FeatureButtons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getEntitlements } from '../../services/horoscopeSubService'
-import { restorePurchasesForUid } from '../../services/iapService'; // import your restore function
+import { restorePurchasesForUid } from '../../services/iapService';
 import { getUid } from '../../services/uidService'
 
 function formatApiError(err) {

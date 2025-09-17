@@ -46,10 +46,10 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-    resizeMode: "contain", // Consider using 'cover' to ensure full coverage
+    resizeMode: "contain",
   },
   pagination: {
-    bottom: 1, // Adjusted for better visibility
+    bottom: 1,
   },
   dot: {
     backgroundColor: "#f1f1f1",

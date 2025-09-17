@@ -136,12 +136,12 @@ export default function ChineseHoroscopeScreen() {
     return (
       <View style={styles.container}>
         <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
             <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>Chinese Horoscope is a premium feature.</Text>
             <TouchableOpacity onPress={() => setShowPaywall(true)} style={{ backgroundColor: '#FFAA1E', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 }}>
               <Text style={{ color: '#000', fontWeight: 'bold' }}>Upgrade</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         </LinearGradient>
         {showPaywall && (
           <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
