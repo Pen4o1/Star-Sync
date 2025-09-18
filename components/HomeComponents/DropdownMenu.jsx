@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated, Text, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import userEvents from '../../app/utils/userEvents';
+import SubscriptionContext from '../../context/SubscriptionContext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -13,6 +14,9 @@ const DropdownMenu = () => {
   const [userName, setUserName] = useState('');
   const [userBirthdate, setUserBirthdate] = useState(null);
   const router = useRouter();
+  const subscription = useContext(SubscriptionContext);
+  const isSubscribed = !!subscription?.isSubscribed;
+  const openPaywall = subscription?.openPaywall;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -64,6 +68,8 @@ const DropdownMenu = () => {
     { name: 'Love & Friendship Matcher', route: '/matches' },
     { name: 'Dreambook', route: '/dreambook' },
   ];
+
+  const premiumRoutes = new Set(['/chinese', '/matches', '/dreambook']);
 
   const translateX = animation.interpolate({
     inputRange: [0, 1],
@@ -119,6 +125,18 @@ const DropdownMenu = () => {
                 }}
               >
                 <Text style={styles.menuText}>{item.name}</Text>
+                {!isSubscribed && premiumRoutes.has(item.route) ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (openPaywall) openPaywall();
+                      closeMenu();
+                    }}
+                    style={styles.upgradeBadge}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.upgradeBadgeText}>Upgrade</Text>
+                  </TouchableOpacity>
+                ) : null}
                 <FontAwesome6 name="chevron-right" size={18} color="#FFAA1E" style={styles.chevron} />
               </TouchableOpacity>
             ))}
@@ -206,6 +224,17 @@ const styles = StyleSheet.create({
   },
   chevron: {
     marginLeft: 10,
+  },
+  upgradeBadge: {
+    backgroundColor: '#FFAA1E',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  upgradeBadgeText: {
+    color: '#000',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });
 
