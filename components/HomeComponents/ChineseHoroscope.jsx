@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import { CHINESE_ZODIAC } from '../../constants/zodiacData'
 import { getChineseDailyHoroscope } from '../../services/horoscopeApi'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getUserChineseZodiac } from '../../constants/userData'
 import SubscriptionContext from '../../context/SubscriptionContext'
+import { useRouter } from 'expo-router'
 
 export default function ChineseHoroscope() {
   const [horoscope, setHoroscope] = useState(null)
@@ -21,6 +21,7 @@ export default function ChineseHoroscope() {
   const subscription = useContext(SubscriptionContext)
   const isSubscribed = !!subscription?.isSubscribed
   const openPaywall = subscription?.openPaywall
+  const router = useRouter()
 
   const fetchHoroscope = async () => {
     try {
@@ -51,10 +52,7 @@ export default function ChineseHoroscope() {
     if (!chineseZodiacId) return
     if (!isSubscribed) return
     fetchHoroscope()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chineseZodiacId, isSubscribed])
-
-  const userAnimal = CHINESE_ZODIAC.find(animal => animal.id === chineseZodiacId)
 
   return (
     <View style={styles.container}>
@@ -68,19 +66,11 @@ export default function ChineseHoroscope() {
                 onPress={() => openPaywall && openPaywall()}
                 style={{ backgroundColor: '#FFAA1E', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8 }}
               >
-                <Text style={{ color: '#000', fontWeight: 'bold', textAlign: 'center' }}> // i need to style this better 
+                <Text style={{ color: '#000', fontWeight: 'bold', textAlign: 'center' }}>
                   Chinese Horoscope is a premium feature — Tap to upgrade 
                 </Text>
               </TouchableOpacity>
             </View>
-          )}
-
-          {isSubscribed && userAnimal && (
-          <View style={styles.animalContainer}>
-            <Text style={styles.animalName}>{userAnimal.name}</Text>
-            <Text style={styles.animalElement}>{userAnimal.element}</Text>
-              <Text style={styles.birthdate}>Born on {userBirthdate}</Text>
-          </View>
           )}
 
           {isSubscribed && (loading ? (
@@ -88,9 +78,14 @@ export default function ChineseHoroscope() {
               <Text style={styles.loadingText}>Loading...</Text>
             </View>
           ) : horoscope ? (
-            <View style={styles.horoscopeContainer}>
+            <TouchableOpacity
+              onPress={() => router.push('/chinese')}
+              style={styles.horoscopeContainer}
+              activeOpacity={0.8}
+            >
               <Text style={styles.horoscopeText}>{horoscope.horoscope}</Text>
-            </View>
+              <Text style={styles.tapHint}>Tap to view full Chinese horoscope</Text>
+            </TouchableOpacity>
           ) : (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>Failed to load horoscope</Text>
@@ -155,6 +150,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     margin: 10,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 170, 30, 0.3)',
   },
   date: {
     color: '#FFAA1E',
@@ -163,8 +160,8 @@ const styles = StyleSheet.create({
   },
   horoscopeText: {
     color: '#fff',
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 18,
+    lineHeight: 28,
   },
   errorContainer: {
     padding: 20,
@@ -173,5 +170,12 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#ff4444',
     fontSize: 16,
+  },
+  tapHint: {
+    color: '#FFAA1E',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 })
