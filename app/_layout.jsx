@@ -119,12 +119,12 @@ const _layout = () => {
   }, [isUserSignedIn, isLoading, fontsLoaded]);
 
   useEffect(() => {
-    if (!isLoading && fontsLoaded && isUserSignedIn) {
+    if (!isLoading && fontsLoaded && isUserSignedIn && !checkingSub) {
       setShowPaywall(!isSubscribed && !hasDismissedPaywall);
     } else {
       setShowPaywall(false);
     }
-  }, [isLoading, fontsLoaded, isUserSignedIn, isSubscribed, hasDismissedPaywall]);
+  }, [isLoading, fontsLoaded, isUserSignedIn, checkingSub, isSubscribed, hasDismissedPaywall]);
 
   useEffect(() => {
     if (error) throw error;
