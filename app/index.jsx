@@ -17,21 +17,24 @@ import { router, useNavigation } from "expo-router";
 const onboardingData = [
   {
     backgroundImage: require("../assets/images/onboarding/OnboardingBG1.png"),
+    //backgroundImage: require("../assets/images/icon.png"),
     image: require("../assets/images/onboarding/Onboarding1.png"),
     heading: '"Unlock Your Birth Chart"',
-    text: "Maecenas sed enim ut sem viverra aliquet. Ac auctor augue mauris augue neque gravida in. Sed turpis tincidunt id aliquet risus feugiat. Commodo elit at imperdiet dui accumsan. At erat pellentesque adipiscing commodo.",
+    text: "EGo deeper with personalized insights based on your birth details, helping you understand your true cosmic path. Enjoy extra features like the Dreambook, Chinese horoscopes, and the Love & Friendship Matcher.",
   },
   {
     backgroundImage: require("../assets/images/onboarding/OnboardingBG2.png"),
+    //backgroundImage: require("../assets/images/icon.png"),
     image: require("../assets/images/onboarding/Onboarding2.png"),
     heading: '"Discover Your Cosmic Blueprint"',
-    text: "Maecenas sed enim ut sem viverra aliquet. Ac auctor augue mauris augue neque gravida in. Sed turpis tincidunt id aliquet risus feugiat. Commodo elit at imperdiet dui accumsan. At erat pellentesque adipiscing commodo.",
+    text: "Explore your unique astrological chart and uncover hidden patterns that shape your destiny and relationships.",
   },
   {
     backgroundImage: require("../assets/images/onboarding/OnboardingBG3.png"),
+    //backgroundImage: require("../assets/images/icon.png"),
     image: require("../assets/images/onboarding/Onboarding3.png"),
     heading: '"Stay Connected to the Stars" ',
-    text: "Maecenas sed enim ut sem viverra aliquet. Ac auctor augue mauris augue neque gravida in. Sed turpis tincidunt id aliquet risus feugiat. Commodo elit at imperdiet dui accumsan. At erat pellentesque adipiscing commodo.",
+    text: "  Get daily, weekly, monthly, and yearly horoscopes that guide you through life’s journey with clarity and inspiration.",
   },
 ];
 
