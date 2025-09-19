@@ -20,7 +20,7 @@ const onboardingData = [
     //backgroundImage: require("../assets/images/icon.png"),
     image: require("../assets/images/onboarding/Onboarding1.png"),
     heading: '"Unlock Your Birth Chart"',
-    text: "EGo deeper with personalized insights based on your birth details, helping you understand your true cosmic path. Enjoy extra features like the Dreambook, Chinese horoscopes, and the Love & Friendship Matcher.",
+    text: "Go deeper with personalized insights based on your birth details, helping you understand your true cosmic path. Enjoy extra features like the Dreambook, Chinese horoscopes, and the Love & Friendship Matcher.",
   },
   {
     backgroundImage: require("../assets/images/onboarding/OnboardingBG2.png"),
@@ -34,7 +34,7 @@ const onboardingData = [
     //backgroundImage: require("../assets/images/icon.png"),
     image: require("../assets/images/onboarding/Onboarding3.png"),
     heading: '"Stay Connected to the Stars" ',
-    text: "  Get daily, weekly, monthly, and yearly horoscopes that guide you through life’s journey with clarity and inspiration.",
+    text: "Get daily, weekly, monthly, and yearly horoscopes that guide you through life’s journey with clarity and inspiration.",
   },
 ];
 

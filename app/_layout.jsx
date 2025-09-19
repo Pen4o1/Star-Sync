@@ -33,6 +33,7 @@ const _layout = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [hasDismissedPaywall, setHasDismissedPaywall] = useState(false);
+  const [checkingSub, setCheckingSub] = useState(true);
   const router = useRouter();
   const segments = useSegments();
 
@@ -96,9 +97,11 @@ const _layout = () => {
   useEffect(() => {
     const runIapCheck = async () => {
       if (isLoading || !fontsLoaded) return;
+      setCheckingSub(true);
       if (!isUserSignedIn) {
         setIsSubscribed(false);
         setShowPaywall(false);
+        setCheckingSub(false);
         return;
       }
       try {
@@ -108,6 +111,8 @@ const _layout = () => {
         setIsSubscribed(!!ent?.is_paid);
       } catch (e) {
         setIsSubscribed(false);
+      } finally {
+        setCheckingSub(false);
       }
     };
     runIapCheck();
@@ -163,7 +168,12 @@ const _layout = () => {
             <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />
             <Stack.Screen name="(auth)" />
           </Stack>
-          {!isSubscribed && !showPaywall && (
+          {(() => {
+            const isOnboarding = segments.length === 0;
+            const isAuthFlow = segments[0] === '(auth)';
+            const hideAdsForFlow = isOnboarding || isAuthFlow;
+            return (!checkingSub && !isSubscribed && !showPaywall && !hideAdsForFlow);
+          })() && (
             <View style={{ width: '100%' }}>
               <AdBanner unitID="ca-app-pub-2666074277435964/7453491051" />
             </View>
