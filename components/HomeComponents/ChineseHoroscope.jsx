@@ -66,7 +66,7 @@ export default function ChineseHoroscope() {
                 onPress={() => openPaywall && openPaywall()}
                 style={{ backgroundColor: '#FFAA1E', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8 }}
               >
-                <Text style={{ color: '#000', fontWeight: 'bold', textAlign: 'center' }}>
+                <Text style={{ color: '#000', textAlign: 'center' }}>
                   Chinese Horoscope is a premium feature — Tap to upgrade 
                 </Text>
               </TouchableOpacity>
