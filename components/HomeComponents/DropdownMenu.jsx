@@ -62,6 +62,7 @@ const DropdownMenu = () => {
   };
 
   const menuItems = [
+    { name: 'Home', route: '/' },
     { name: 'My Account Settings', route: '/EditUser' },
     { name: 'Daily Horoscope', route: '/daily' },
     { name: 'Chinese Horoscope', route: '/chinese' },

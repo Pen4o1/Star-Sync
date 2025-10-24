@@ -36,6 +36,35 @@ export default function MatchScreen() {
     }
   };
 
+  const getRandomMatch = async () => {
+    try {
+      setLoading(true);
+      
+      // Generate a random zodiac sign (excluding the first selected sign)
+      let randomSignId;
+      do {
+        randomSignId = Math.floor(Math.random() * 12) + 1;
+      } while (randomSignId === selectedSign1);
+      
+      setSelectedSign2(randomSignId);
+      
+      // Immediately fetch the match with the random sign
+      const sign1 = ZODIAC_SIGNS[selectedSign1 - 1].name.toLowerCase();
+      const sign2 = ZODIAC_SIGNS[randomSignId - 1].name.toLowerCase();
+
+      const data =
+        matchType === 'love'
+          ? await getLoveMatch(sign1, sign2)
+          : await getFriendMatch(sign1, sign2);
+
+      setMatchResult(data);
+    } catch (error) {
+      console.error('Error fetching random match:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#1a1a1a', '#2a2a2a']} style={styles.gradient}>
@@ -97,15 +126,27 @@ export default function MatchScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.matchButton}
-            onPress={fetchMatch}
-            disabled={loading}
-          >
-            <Text style={styles.matchButtonText}>
-              {loading ? 'Loading...' : 'Get Match'}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.matchButton}
+              onPress={fetchMatch}
+              disabled={loading}
+            >
+              <Text style={styles.matchButtonText}>
+                {loading ? 'Loading...' : 'Get Match'}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.matchButton, styles.randomMatchButton]}
+              onPress={getRandomMatch}
+              disabled={loading}
+            >
+              <Text style={styles.matchButtonText}>
+                {loading ? 'Loading...' : 'Random Match'}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {matchResult && (
             <View style={styles.resultContainer}>
@@ -191,12 +232,22 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginTop: 2,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    marginVertical: 10,
+  },
   matchButton: {
     backgroundColor: '#FFAA1E',
     padding: 15,
     borderRadius: 5,
-    margin: 20,
     alignItems: 'center',
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  randomMatchButton: {
+    backgroundColor: '#6B46C1',
   },
   matchButtonText: {
     color: '#fff',

@@ -94,6 +94,42 @@ export default function MatchScreen() {
     closePicker()
   }
 
+  const getRandomMatch = async () => {
+    if (!isPaid) { setShowPaywall(true); return; }
+    if (!selectedSign1) {
+      alert('Please set your zodiac sign first');
+      return;
+    }
+    
+    try {
+      setLoading(true)
+      
+      // Generate a random zodiac sign (excluding the user's own sign)
+      let randomSignId
+      do {
+        randomSignId = Math.floor(Math.random() * 12) + 1
+      } while (randomSignId === selectedSign1)
+      
+      setSelectedSign2(randomSignId)
+      
+      // Immediately fetch the match with the random sign
+      const sign1 = ZODIAC_SIGNS[selectedSign1 - 1].name.toLowerCase()
+      const sign2 = ZODIAC_SIGNS[randomSignId - 1].name.toLowerCase()
+      
+      const data =
+        matchType === 'love'
+          ? await getLoveMatch(sign1, sign2)
+          : await getFriendMatch(sign1, sign2)
+      
+      setMatchResult(data)
+      setModalVisible(true)
+    } catch (error) {
+      console.error('Error fetching random match:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (entitlementsLoading) {
     return (
       <View style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
@@ -187,15 +223,27 @@ export default function MatchScreen() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.matchButton}
-            onPress={fetchMatch}
-            disabled={loading || !selectedSign2 || !selectedSign1}
-          >
-            <Text style={styles.matchButtonText}>
-              {loading ? 'Loading...' : 'Get Match'}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.matchButton}
+              onPress={fetchMatch}
+              disabled={loading || !selectedSign2 || !selectedSign1}
+            >
+              <Text style={styles.matchButtonText}>
+                {loading ? 'Loading...' : 'Get Match'}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.matchButton, styles.randomMatchButton]}
+              onPress={getRandomMatch}
+              disabled={loading || !selectedSign1}
+            >
+              <Text style={styles.matchButtonText}>
+                {loading ? 'Loading...' : 'Random Match'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </LinearGradient>
 
@@ -301,12 +349,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    marginVertical: 10,
+  },
   matchButton: {
     backgroundColor: '#FFAA1E',
     padding: 15,
     borderRadius: 5,
-    margin: 20,
     alignItems: 'center',
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  randomMatchButton: {
+    backgroundColor: '#6B46C1',
   },
   matchButtonText: {
     color: '#fff',
