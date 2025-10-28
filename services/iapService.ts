@@ -121,11 +121,11 @@ export async function buySubscription(
 export async function restoreSubscriptions(): Promise<ProductPurchase[]> {
   try {
     const purchases = await RNIap.getAvailablePurchases();
-    Alert.alert('Restore Purchases', JSON.stringify(purchases, null, 2));
+    // Alert.alert('Restore Purchases', JSON.stringify(purchases, null, 2));
     return purchases ?? [];
   } catch (err: any) {
     console.warn('restoreSubscriptions error:', err);
-    Alert.alert('Restore Error', JSON.stringify(err, null, 2));
+    // Alert.alert('Restore Error', JSON.stringify(err, null, 2));
     return [];
   }
 }
@@ -136,14 +136,14 @@ export async function hasActiveSubscription(): Promise<boolean> {
     const hasAnySubs =
       purchases?.some((p) => p.productId === SUBS_PRODUCT_ID) ?? false;
 
-    Alert.alert(
-      'Active Subscription Check',
-      JSON.stringify({ hasAnySubs, purchases }, null, 2),
-    );
+    // Alert.alert(
+    //   'Active Subscription Check',
+    //   JSON.stringify({ hasAnySubs, purchases }, null, 2),
+    // );
     return hasAnySubs;
   } catch (err: any) {
     console.warn('hasActiveSubscription error:', err);
-    Alert.alert('Check Error', JSON.stringify(err, null, 2));
+    // Alert.alert('Check Error', JSON.stringify(err, null, 2));
     return false;
   }
 }
@@ -179,11 +179,11 @@ export function setupPurchaseListeners(
         console.log('Verifying subscription payload:', payload);
 
         // 🔔 Show full payload BEFORE sending
-        Alert.alert('Payload to Backend 📦', JSON.stringify(payload, null, 2));
+        // Alert.alert('Payload to Backend 📦', JSON.stringify(payload, null, 2));
 
         // 🔑 Verify with backend
         const response = await verifySubscription(payload as any);
-        Alert.alert('Subscription Verified ✅', JSON.stringify(response, null, 2));
+        // Alert.alert('Subscription Verified ✅', JSON.stringify(response, null, 2));
 
         if (!(purchase as any).acknowledgedAndroid) {
           try {
@@ -256,17 +256,17 @@ export async function restorePurchasesForUid(
 
         console.log('Verifying restored payload:', payload);
         const response = await verifySubscription(payload as any);
-        Alert.alert('Restored ✅', JSON.stringify(response, null, 2));
+        // Alert.alert('Restored ✅', JSON.stringify(response, null, 2));
       } catch (err: any) {
         console.warn('Failed to verify restored purchase:', err);
-        Alert.alert('Restore Error', JSON.stringify(err, null, 2));
+        // Alert.alert('Restore Error', JSON.stringify(err, null, 2));
       }
     }
 
     return purchases ?? [];
   } catch (err: any) {
     console.warn('restorePurchasesForUid error:', err);
-    Alert.alert('Restore Error', JSON.stringify(err, null, 2));
+    // Alert.alert('Restore Error', JSON.stringify(err, null, 2));
     return [];
   }
 }

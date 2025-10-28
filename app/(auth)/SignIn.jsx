@@ -29,7 +29,7 @@ const SignIn = () => {
       const uid = await getUid();
       await AsyncStorage.setItem('uid', uid);
 
-      router.push("/Home");
+      router.push("/(tabs)");
     } catch (e) {
       alert('Failed to save user data');
     }
