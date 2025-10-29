@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ImageBackground } from "react-native";
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen, Stack, useRouter, useSegments } from "expo-router";
 import ThemeContext from "../theme/ThemeContext";
@@ -161,33 +161,39 @@ const _layout = () => {
   return (
     <ThemeContext.Provider value={darkMode ? theme.dark : theme.light}>
       <SubscriptionContext.Provider value={{ isSubscribed, openPaywall }}>
-        <View style={styles.container}>
-          {isUserSignedIn && !showPaywall && <DropdownMenu />}
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" />
-          </Stack>
-          {(() => {
-            const isOnboarding = segments.length === 0;
-            const isAuthFlow = segments[0] === '(auth)';
-            const hideAdsForFlow = isOnboarding || isAuthFlow;
-            return (!checkingSub && !isSubscribed && !showPaywall && !hideAdsForFlow);
-          })() && (
-            <View style={{ width: '100%' }}>
-              <AdBanner unitID="ca-app-pub-2666074277435964/7453491051" />
-            </View>
-          )}
-          {isUserSignedIn && showPaywall && (
-            <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
-              <SubscriptionPaywall
-                onClose={() => { setShowPaywall(false); setHasDismissedPaywall(true); }}
-                onSubscribe={handleSubscribe}
-              />
-            </View>
-          )}
-          <StatusBar style="light" />
-        </View>
+        <ImageBackground 
+          source={require("../assets/images/Auth/SignInBG.png")} 
+          style={styles.backgroundImage}
+          resizeMode="cover"
+        >
+          <View style={styles.container}>
+            {isUserSignedIn && !showPaywall && <DropdownMenu />}
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(tabs)" screenOptions={{ headerShown: false }} />
+              <Stack.Screen name="(auth)" />
+            </Stack>
+            {(() => {
+              const isOnboarding = segments.length === 0;
+              const isAuthFlow = segments[0] === '(auth)';
+              const hideAdsForFlow = isOnboarding || isAuthFlow;
+              return (!checkingSub && !isSubscribed && !showPaywall && !hideAdsForFlow);
+            })() && (
+              <View style={{ width: '100%' }}>
+                <AdBanner unitID="ca-app-pub-2666074277435964/7453491051" />
+              </View>
+            )}
+            {isUserSignedIn && showPaywall && (
+              <View style={{ position: 'absolute', zIndex: 100, top: 0, left: 0, right: 0, bottom: 0 }}>
+                <SubscriptionPaywall
+                  onClose={() => { setShowPaywall(false); setHasDismissedPaywall(true); }}
+                  onSubscribe={handleSubscribe}
+                />
+              </View>
+            )}
+            <StatusBar style="light" />
+          </View>
+        </ImageBackground>
       </SubscriptionContext.Provider> 
     </ThemeContext.Provider>
   );
@@ -196,8 +202,13 @@ const _layout = () => {
 export default _layout;
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
   },
 });
