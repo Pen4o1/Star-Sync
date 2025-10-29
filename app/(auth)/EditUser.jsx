@@ -39,7 +39,7 @@ const EditUser = () => {
       const localDateString = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
       await AsyncStorage.setItem("userBirthDate", localDateString);
       userEvents.emit("refreshUser");
-      router.push("/Home");
+      router.push("/(tabs)");
     } catch (e) {
       alert("Failed to save user data");
     }

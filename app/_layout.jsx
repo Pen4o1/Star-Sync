@@ -58,7 +58,7 @@ const _layout = () => {
           setIsUserSignedIn(true);
           if ((segments[0] === '(auth)' && segments[1] !== 'EditUser') || segments.length === 0) {
             setTimeout(() => {
-              router.replace('/Home');
+              router.replace('/(tabs)');
             }, 100);
           }
         } else {
