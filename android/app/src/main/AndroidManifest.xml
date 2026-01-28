@@ -32,7 +32,6 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
-        <data android:scheme="com.buzly.horoscope2"/>
         <data android:scheme="com.appiato.horoscope"/>
       </intent-filter>
     </activity>

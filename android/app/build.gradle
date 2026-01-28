@@ -52,20 +52,35 @@ android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
-    namespace 'com.buzly.horoscope2'
+    namespace 'com.appiato.horoscope'
 
     defaultConfig {
-        applicationId 'com.buzly.horoscope2'
+        applicationId 'com.appiato.horoscope'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 92
-        versionName "1.9.2"
+        versionCode 95
+        versionName "1.9.5"
+        missingDimensionStrategy "expo.modules.updates.UPDATES_CONFIGURATION", "disabled"
+        missingDimensionStrategy "store", "play"
     }
 
     flavorDimensions "store"
     productFlavors {
-        play { dimension "store" }
-        amazon { dimension "store" }
+        play 
+        { 
+            dimension "store" 
+        }
+        amazon 
+        { 
+            dimension "store" 
+        }
+    }
+
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        if (!names.contains("play") && !names.contains("amazon")) {
+            setIgnore(true)
+        }
     }
 
     signingConfigs {
